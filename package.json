@@ -1,0 +1,21 @@
+{
+  "name": "snacktrack",
+  "version": "0.1.0",
+  "description": "Scaffolding inicial do projeto SnackTrack",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mysql2": "^3.3.0",
+    "dotenv": "^16.0.3",
+    "bcrypt": "^5.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}
