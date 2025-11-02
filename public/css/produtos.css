@@ -1,0 +1,52 @@
+/* Produtos page styles — keep consistent with global styles */
+.table-wrap {
+  overflow-x: auto;
+}
+#produtosTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+#produtosTable th,
+#produtosTable td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #e6e6e6;
+  text-align: left;
+}
+#produtosTable th {
+  background: #fafafa;
+  font-weight: 600;
+}
+.modal .form-row {
+  margin-bottom: 8px;
+}
+.modal .two-cols {
+  display: flex;
+  gap: 12px;
+}
+.modal .two-cols > div {
+  flex: 1;
+}
+.form-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+.error {
+  color: #b00020;
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
+
+.modal .form-row.full {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 600px) {
+  .modal .two-cols {
+    flex-direction: column;
+  }
+}
+
+/* modal shared styles moved to global styles.css; keep page-specific layout above */

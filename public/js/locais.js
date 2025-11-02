@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         b.addEventListener("click", async (e) => {
           e.preventDefault();
           const id = e.currentTarget.dataset.id;
-          const label = (e.currentTarget.textContent || '').trim();
+          const label = (e.currentTarget.textContent || "").trim();
           const newStatus = label === "Ativar" ? "Ativo" : "Inativo";
           // Try to reuse the loaded list to build a full payload so validation passes
           let local = j.locais.find((x) => String(x.id) === String(id));
@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               }
             }
             if (!local) {
-              showBanner('Local não encontrado');
+              showBanner("Local não encontrado");
               return;
             }
             const payload = {
@@ -54,8 +54,8 @@ document.addEventListener("DOMContentLoaded", async () => {
               status: newStatus,
             };
             const res = await fetch(`/api/locais/${id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
               body: JSON.stringify(payload),
             });
             if (res.ok) {
@@ -63,13 +63,17 @@ document.addEventListener("DOMContentLoaded", async () => {
               await load();
             } else {
               const jerr = await res.json().catch(() => ({}));
-              showBanner(jerr.error || 'Erro ao atualizar status');
+              showBanner(jerr.error || "Erro ao atualizar status");
             }
           } catch (err) {
-            console.error('Erro ao atualizar status', err);
-            showBanner('Erro de rede');
+            console.error("Erro ao atualizar status", err);
+            showBanner("Erro de rede");
           } finally {
-            e.currentTarget.disabled = false;
+            setTimeout(() => {
+              if (e && e.currentTarget) {
+                e.currentTarget.disabled = false;
+              }
+            }, 0);
           }
         })
       );

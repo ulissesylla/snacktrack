@@ -1,7 +1,7 @@
 const produtoData = require("../data/produtoData");
 
 const UNIDADES = ["unidade", "kg", "litro"];
-const CATEGORIAS = ["doce", "salgado", "bebida", "outro"];
+const CATEGORIAS = ["doce", "salgado", "bebida", "matéria-prima"];
 const TIPOS = ["Matéria-prima", "Produto semiacabado", "Produto acabado"];
 
 function validateInput(payload = {}, { isUpdate = false } = {}) {
@@ -10,7 +10,21 @@ function validateInput(payload = {}, { isUpdate = false } = {}) {
     if (!payload.nome || String(payload.nome).trim().length < 2)
       errors.push("nome é obrigatório e deve ter ao menos 2 caracteres");
   }
-  if (typeof payload.preco !== "undefined" && payload.preco !== null) {
+  // preco: obrigatório no create, opcional no update. Quando presente deve ser positivo
+  if (!isUpdate) {
+    if (
+      payload.preco === undefined ||
+      payload.preco === null ||
+      payload.preco === ""
+    ) {
+      errors.push("preco é obrigatório");
+    }
+  }
+  if (
+    typeof payload.preco !== "undefined" &&
+    payload.preco !== null &&
+    payload.preco !== ""
+  ) {
     const v = Number(payload.preco);
     if (Number.isNaN(v) || v <= 0)
       errors.push("preco deve ser número positivo");

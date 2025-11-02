@@ -79,7 +79,7 @@ INSERT INTO locais (nome, capacidade_maxima, descricao) VALUES
 
 -- Inserir produtos de exemplo
 INSERT INTO produtos (nome, descricao, preco, unidade_medida, categoria, estoque_minimo, tipo) VALUES
-('Farinha de Trigo', 'Farinha de trigo especial para panificação', 5.50, 'kg', 'Matéria-prima', 10, 'Matéria-prima'),
-('Açúcar Refinado', 'Açúcar branco refinado', 4.20, 'kg', 'Matéria-prima', 5, 'Matéria-prima'),
-('Bolo de Chocolate', 'Bolo de chocolate caseiro', 25.00, 'unidade', 'Doces', 2, 'Produto acabado'),
-('Coxinha', 'Salgado de frango', 6.00, 'unidade', 'Salgados', 10, 'Produto acabado');
+('Farinha de Trigo', 'Farinha de trigo especial para panificação', 5.50, 'kg', 'matéria-prima', 10, 'Matéria-prima'),
+('Açúcar Refinado', 'Açúcar branco refinado', 4.20, 'kg', 'matéria-prima', 5, 'Matéria-prima'),
+('Bolo de Chocolate', 'Bolo de chocolate caseiro', 25.00, 'unidade', 'doce', 2, 'Produto acabado'),
+('Coxinha', 'Salgado de frango', 6.00, 'unidade', 'Salgado', 10, 'Produto acabado');

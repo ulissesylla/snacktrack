@@ -56,13 +56,23 @@ document.addEventListener("DOMContentLoaded", async () => {
           locaisLink.textContent = "Locais";
           locaisLink.style.marginLeft = "8px";
           navRight.appendChild(locaisLink);
+          const produtosLink = document.createElement("a");
+          produtosLink.href = "/produtos.html";
+          produtosLink.textContent = "Produtos";
+          produtosLink.style.marginLeft = "8px";
+          navRight.appendChild(produtosLink);
         } else {
-          // non-managers still get a link to locais
+          // non-managers get Locais and Produtos links
           const locaisLink = document.createElement("a");
           locaisLink.href = "/locais.html";
           locaisLink.textContent = "Locais";
           locaisLink.style.marginLeft = "8px";
           navRight.appendChild(locaisLink);
+          const produtosLink = document.createElement("a");
+          produtosLink.href = "/produtos.html";
+          produtosLink.textContent = "Produtos";
+          produtosLink.style.marginLeft = "8px";
+          navRight.appendChild(produtosLink);
         }
 
         const logoutBtn = document.createElement("a");

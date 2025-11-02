@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Produtos - SnackTrack</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="/css/produtos.css" />
+  </head>
+  <body>
+    <div id="navbar-root"></div>
+    <div
+      id="globalBanner"
+      class="banner hidden"
+      role="region"
+      aria-live="assertive"
+    ></div>
+    <main class="container">
+      <h1>Gestão de Produtos</h1>
+      <button id="btnNew">Novo Produto</button>
+      <div class="table-wrap">
+        <table id="produtosTable">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Categoria</th>
+              <th>Tipo</th>
+              <th>Preço</th>
+              <th>Estoque Mínimo</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </main>
+
+    <!-- Modal for create/edit product -->
+    <div id="produtoModal" class="modal-overlay" aria-hidden="true">
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modalTitle"
+      >
+        <div class="modal-header">
+          <h2 id="modalTitle">Novo Produto</h2>
+          <button id="modalClose" class="modal-close" aria-label="Fechar">
+            ×
+          </button>
+        </div>
+        <form id="produtoForm" class="modal-body">
+          <div class="form-row full">
+            <label for="descricao">Descrição</label>
+            <textarea id="descricao" name="descricao" rows="2"></textarea>
+            <div class="error" id="err-descricao"></div>
+          </div>
+
+          <div class="form-row">
+            <label for="nome">Nome</label>
+            <input id="nome" name="nome" type="text" required />
+            <div class="error" id="err-nome"></div>
+          </div>
+
+          <div class="form-row">
+            <label for="preco">Preço</label>
+            <input
+              id="preco"
+              name="preco"
+              type="number"
+              step="0.01"
+              min="0"
+              required
+            />
+            <div class="error" id="err-preco"></div>
+          </div>
+
+          <div class="form-row">
+            <label for="unidade_medida">Unidade Medida</label>
+            <select id="unidade_medida" name="unidade_medida">
+              <option value="unidade">unidade</option>
+              <option value="kg">kg</option>
+              <option value="litro">litro</option>
+            </select>
+            <div class="error" id="err-unidade_medida"></div>
+          </div>
+
+          <div class="form-row">
+            <label for="categoria">Categoria</label>
+            <select id="categoria" name="categoria">
+              <option value="doce">doce</option>
+              <option value="salgado">salgado</option>
+              <option value="bebida">bebida</option>
+              <option value="matéria-prima">matéria-prima</option>
+            </select>
+            <div class="error" id="err-categoria"></div>
+          </div>
+
+          <div class="form-row">
+            <label for="estoque_minimo">Estoque Mínimo</label>
+            <input
+              id="estoque_minimo"
+              name="estoque_minimo"
+              type="number"
+              step="1"
+              min="0"
+            />
+            <div class="error" id="err-estoque_minimo"></div>
+          </div>
+
+          <div class="form-row">
+            <label for="fabricante">Fabricante</label>
+            <input id="fabricante" name="fabricante" type="text" />
+            <div class="error" id="err-fabricante"></div>
+          </div>
+
+          <div class="form-row">
+            <label for="tipo">Tipo</label>
+            <select id="tipo" name="tipo">
+              <option value="Matéria-prima">Matéria-prima</option>
+              <option value="Produto semiacabado">Produto semiacabado</option>
+              <option value="Produto acabado">Produto acabado</option>
+            </select>
+            <div class="error" id="err-tipo"></div>
+          </div>
+
+          <div class="form-row">
+            <label for="data_validade">Data Validade</label>
+            <input id="data_validade" name="data_validade" type="date" />
+            <div class="error" id="err-data_validade"></div>
+          </div>
+
+          <div class="form-row full">
+            <label for="status">Status</label>
+            <select id="status" name="status">
+              <option value="Disponível">Disponível</option>
+              <option value="Indisponível">Indisponível</option>
+            </select>
+            <div class="error" id="err-status"></div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" id="btnSubmit">Criar</button>
+            <button type="button" id="btnCancel">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <link rel="stylesheet" href="/css/navbar.css" />
+    <script src="/js/auth.js"></script>
+    <script src="/js/navbar.js"></script>
+    <script src="/js/notify.js"></script>
+    <script src="/js/produtos.js"></script>
+  </body>
+</html>
