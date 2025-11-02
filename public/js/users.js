@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const tbody = document.querySelector("#usersTable tbody");
   let editId = null;
+  // showBanner(msg) and hideBanner() are provided by /js/notify.js (global)
   const load = async () => {
     const res = await fetch("/api/usuarios");
     if (res.status === 200) {
@@ -45,7 +46,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           const id = e.target.dataset.id;
           const user = j.users.find((x) => String(x.id) === String(id));
           if (!user) {
-            alert("Usuário não encontrado");
+            showBanner("Usuário não encontrado");
             return;
           }
           // set edit mode
@@ -176,14 +177,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         load();
       } else {
         const j = await res.json().catch(() => ({}));
-        alert(
+        showBanner(
           j.error ||
             (editId ? "Erro ao atualizar usuário" : "Erro ao criar usuário")
         );
       }
     } catch (e) {
       console.error(e);
-      alert("Erro de rede");
+      showBanner("Erro de rede");
     }
     // re-enable after 1.2s
     setTimeout(() => {

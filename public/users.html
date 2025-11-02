@@ -9,6 +9,8 @@
   </head>
   <body>
     <div id="navbar-root"></div>
+  <!-- Global banner for non-blocking persistent messages -->
+  <div id="globalBanner" class="banner hidden" role="region" aria-live="assertive"></div>
     <main class="container">
       <h1>Gestão de Usuários</h1>
       <button id="btnNew">Novo usuário</button>
@@ -78,6 +80,7 @@
     <link rel="stylesheet" href="/css/navbar.css" />
     <script src="/js/auth.js"></script>
     <script src="/js/navbar.js"></script>
+  <script src="/js/notify.js"></script>
     <script src="/js/users.js"></script>
   </body>
 </html>

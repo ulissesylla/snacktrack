@@ -51,6 +51,18 @@ document.addEventListener("DOMContentLoaded", async () => {
           usersLink.textContent = "Usuários";
           usersLink.style.marginLeft = "8px";
           navRight.appendChild(usersLink);
+          const locaisLink = document.createElement("a");
+          locaisLink.href = "/locais.html";
+          locaisLink.textContent = "Locais";
+          locaisLink.style.marginLeft = "8px";
+          navRight.appendChild(locaisLink);
+        } else {
+          // non-managers still get a link to locais
+          const locaisLink = document.createElement("a");
+          locaisLink.href = "/locais.html";
+          locaisLink.textContent = "Locais";
+          locaisLink.style.marginLeft = "8px";
+          navRight.appendChild(locaisLink);
         }
 
         const logoutBtn = document.createElement("a");
