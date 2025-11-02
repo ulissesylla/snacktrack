@@ -30,18 +30,23 @@ app.use("/api/movimentacoes", movimentacaoRoutes);
 // Routes
 app.use("/", routes);
 
-// Start server after testing DB connection
-async function start() {
-  try {
-    // quick test query (doesn't require any tables)
-    await db.query("SELECT 1");
-    app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
-    });
-  } catch (err) {
-    console.error("Failed to start application:", err.message || err);
-    process.exit(1);
-  }
-}
+// Export the app instance for testing
+module.exports = app;
 
-start();
+// Start server after testing DB connection only if this file is run directly
+if (require.main === module) {
+  async function start() {
+    try {
+      // quick test query (doesn't require any tables)
+      await db.query("SELECT 1");
+      app.listen(PORT, () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+      });
+    } catch (err) {
+      console.error("Failed to start application:", err.message || err);
+      process.exit(1);
+    }
+  }
+
+  start();
+}
