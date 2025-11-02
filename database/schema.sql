@@ -70,7 +70,7 @@ CREATE TABLE alertas (
 
 -- Inserir usuário admin padrão (senha: "admin123" criptografada)
 INSERT INTO usuarios (nome, email, senha, funcao) VALUES 
-('Administrador', 'admin@snacktrack.com', '$2b$10$Kb7kdkdK8k8k8k8k8k8k8u8k8k8k8k8k8k8k8k8k8k8k8k8k8k8k8k8k8k8k8k', 'Gerente');
+('Administrador', 'admin@snacktrack.com', '$2b$10$1I5FTCZE8ynfjmarko1UW.9cknSTZosPNJWXf1AFXoliQt5u6aBrC', 'Gerente');
 
 -- Inserir locais padrão baseado na documentação
 INSERT INTO locais (nome, capacidade_maxima, descricao) VALUES

@@ -17,6 +17,11 @@ body {
   background: #f7f8fb;
 }
 
+/* Add top padding to avoid content being hidden behind the fixed navbar */
+body {
+  padding-top: 64px;
+}
+
 .container {
   max-width: 1100px;
   margin: 0 auto;
@@ -87,4 +92,32 @@ main.container {
   .brand {
     font-size: 16px;
   }
+}
+
+/* Users table and buttons */
+#usersTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+}
+#usersTable th,
+#usersTable td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #eef2f7;
+  text-align: left;
+}
+#usersTable th {
+  background: #fbfdff;
+  font-weight: 600;
+}
+button {
+  background: #0f172a;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+button.secondary {
+  background: #6b7280;
 }

@@ -1,13 +1,16 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const statusEl = document.getElementById("status");
   const breadcrumbsEl = document.getElementById("breadcrumbs");
+  const navRight = document.getElementById("navRight");
 
   // Initialize breadcrumbs
   const breadcrumbs = new Breadcrumbs(breadcrumbsEl);
   breadcrumbs.render();
 
-  // Navigation links
-  document.querySelectorAll(".nav-links a").forEach((a) => {
+  // Navbar handles user rendering (Auth and user links). No duplication here.
+
+  // Navigation links: only intercept links that have data-route
+  document.querySelectorAll(".nav-links a[data-route]").forEach((a) => {
     a.addEventListener("click", (e) => {
       e.preventDefault();
       const route = a.dataset.route || "home";

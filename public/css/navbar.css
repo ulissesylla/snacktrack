@@ -1,0 +1,38 @@
+/* Navbar component styles */
+.top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #0f172a;
+  color: white;
+  box-shadow: 0 2px 6px rgba(2, 6, 23, 0.2);
+  z-index: 1000;
+}
+.top-nav .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+}
+.top-nav .brand {
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: #fff;
+}
+.top-nav .nav-links a {
+  color: #e6eef8;
+  text-decoration: none;
+  margin-left: 18px;
+  padding: 6px 8px;
+  border-radius: 4px;
+}
+.top-nav .nav-links a:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+@media (max-width: 640px) {
+  .top-nav .nav-links {
+    overflow: auto;
+  }
+}

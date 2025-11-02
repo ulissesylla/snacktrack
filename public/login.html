@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Login - SnackTrack</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="/css/login.css" />
+  </head>
+  <body>
+    <main class="login-page">
+      <div class="login-card">
+        <h2>Entrar no SnackTrack</h2>
+        <form id="loginForm">
+          <label>Email</label>
+          <input type="email" id="email" required />
+          <label>Senha</label>
+          <input type="password" id="senha" required />
+          <button type="submit">Entrar</button>
+        </form>
+        <p id="error" class="error"></p>
+        <a href="#">Esqueci minha senha</a>
+      </div>
+    </main>
+    <script src="/js/auth.js"></script>
+    <script>
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const email = document.getElementById("email").value;
+          const senha = document.getElementById("senha").value;
+          const r = await Auth.login(email, senha);
+          if (r && r.ok) {
+            window.location.href = "/";
+          } else {
+            document.getElementById("error").textContent =
+              (r && r.error) || "Falha ao autenticar";
+          }
+        });
+    </script>
+  </body>
+</html>

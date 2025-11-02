@@ -3,6 +3,9 @@ const express = require("express");
 const path = require("path");
 const db = require("./config/database");
 const routes = require("./routes");
+const sessionMiddleware = require("./config/session");
+const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,6 +13,13 @@ const PORT = process.env.PORT || 3000;
 // Middlewares
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
+
+// sessions (must be used before routes)
+app.use(sessionMiddleware);
+
+// auth & user routes
+app.use(authRoutes);
+app.use("/api/usuarios", userRoutes);
 
 // Routes
 app.use("/", routes);
