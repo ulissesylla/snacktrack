@@ -1,0 +1,139 @@
+<task>
+  <submodule>3.5: Interface de Saída de Estoque</submodule>
+  <objective>
+    Criar interface para registrar saída de produtos do estoque, mantendo alta similaridade com a interface de entrada de estoque (Sub-módulo 3.4), mas com funcionalidades adicionais de verificação de estoque.
+    - Reutilizar estrutura e padrões da página de entrada de estoque
+    - Adicionar verificação de estoque disponível em tempo real
+    - Implementar validações visuais baseadas no estoque atual
+    - Garantir que saídas não excedam o estoque disponível
+  </objective>
+
+  <files>
+    <!-- PÁGINA DE SAÍDA DE ESTOQUE -->
+    <file type="frontend">
+      <path>public/saida-estoque.html</path>
+      <purpose>Página para registro de saída de estoque - estrutura muito similar à entrada-estoque.html</purpose>
+      <requirements>
+        - Manter estrutura HTML idêntica à entrada-estoque.html
+        - Alterar título para "Registrar Saída de Estoque"
+        - Alterar texto do botão para "Registrar Saída"
+        - Adicionar elemento para exibir estoque disponível (div com ID específico)
+        - Manter mesma organização de formulário e classes CSS
+        - Incluir mesmo conjunto de scripts (auth.js, navbar.js, saidaEstoque.js)
+        - Preservar mesma estrutura de containers e layout
+      </requirements>
+    </file>
+
+    <!-- LÓGICA JAVASCRIPT PARA SAÍDA -->
+    <file type="frontend">
+      <path>public/js/saidaEstoque.js</path>
+      <purpose>Lógica para saída de estoque - similar à entradaEstoque.js com funcionalidades extras</purpose>
+      <requirements>
+        - Implementar mesmo fluxo de carregamento de produtos e locais
+        - Manter mesma estrutura de validação básica de formulário
+        - PRESERVAR mesmo padrão de submissão e tratamento de erros
+        - ADICIONAR funcionalidades específicas para saída:
+          * Consultar estoque atual ao selecionar produto/local
+          * Exibir estoque disponível em elemento dedicado
+          * Validar se quantidade não excede estoque
+          * Atualizar interface baseada no estoque (cores, estados)
+          * Bloquear envio se quantidade for maior que estoque
+        - Usar mesmo sistema de notificações para feedback
+        - Manter mesma abordagem de prevenção de submissões duplicadas
+      </requirements>
+    </file>
+
+    <!-- ATUALIZAÇÃO MENU NAVEGAÇÃO -->
+    <file type="frontend">
+      <path>public/index.html</path>
+      <purpose>Adicionar saída de estoque no menu de movimentações</purpose>
+      <requirements>
+        - No dropdown "Movimentações", adicionar item "Saída de Estoque"
+        - Link para saida-estoque.html
+        - Manter mesma estilização dos itens existentes
+      </requirements>
+    </file>
+  </files>
+
+  <similarity_emphasis>
+    <similar>Estrutura HTML: 95% idêntica à entrada-estoque.html</similar>
+    <similar>Carregamento inicial: Mesmas chamadas de API para produtos/locais</similar>
+    <similar>Validação básica: Mesmas regras para campos obrigatórios</similar>
+    <similar>Integração: Mesmo uso de auth.js, navbar.js, notify.js</similar>
+    <similar>Padrões de código: Manter mesma organização e estilo</similar>
+  </similarity_emphasis>
+
+  <key_differences>
+    <difference>
+      <element>Consulta de Estoque</element>
+      <description>Nova funcionalidade para buscar estoque atual via API ao selecionar produto/local</description>
+    </difference>
+    <difference>
+      <element>Exibição de Estoque</element>
+      <description>Elemento visual para mostrar "Estoque disponível: X unidades"</description>
+    </difference>
+    <difference>
+      <element>Validação de Quantidade</element>
+      <description>Verificar se quantidade solicitada não excede estoque disponível</description>
+    </difference>
+    <difference>
+      <element>Feedback Visual</element>
+      <description>Mudanças de cor e estado baseadas na relação quantidade/estoque</description>
+    </difference>
+    <difference>
+      <element>Endpoint API</element>
+      <description>Usar POST /api/movimentacoes/saida em vez de entrada</description>
+    </difference>
+  </key_differences>
+
+  <visual_feedback_specification>
+    - Elemento de estoque: mostrar "Estoque disponível: X" com fundo colorido
+    - Estado normal: quantidade ≤ estoque → verde
+    - Estado aviso: quantidade > 80% do estoque → amarelo  
+    - Estado erro: quantidade > estoque → vermelho, botão desabilitado
+    - Transições suaves entre estados
+  </visual_feedback_specification>
+
+  <api_modifications>
+    <existing_endpoints>
+      - GET /api/produtos?status=Disponível (já existe)
+      - GET /api/locais?status=Ativo (já existe)
+    </existing_endpoints>
+    <modified_endpoint>
+      - POST /api/movimentacoes/saida (em vez de /entrada)
+    </modified_endpoint>
+    <new_endpoint_required>
+      - GET /api/movimentacoes/estoque?produto_id=X&local_id=Y (precisa ser criado)
+    </new_endpoint_required>
+  </api_modifications>
+
+  <implementation_strategy>
+    <step1>Copiar e adaptar entrada-estoque.html para saida-estoque.html</step1>
+    <step2>Copiar e adaptar entradaEstoque.js para saidaEstoque.js</step2>
+    <step3>Implementar consulta de estoque na inicialização e mudanças de seleção</step3>
+    <step4>Adicionar validação visual baseada no estoque disponível</step4>
+    <step5>Integrar com endpoint de saída e testar fluxo completo</step5>
+  </implementation_strategy>
+
+  <dependencies>
+    - Sub-módulo 3.4 completamente implementado (para referência)
+    - Endpoint GET /api/movimentacoes/estoque criado no backend
+    - API de movimentações funcionando (Sub-módulo 3.2)
+  </dependencies>
+
+  <user_experience_flow>
+    1. Usuário acessa página → carrega produtos/locais (igual entrada)
+    2. Seleciona produto e local → consulta e exibe estoque (DIFERENÇA)
+    3. Digita quantidade → validação visual imediata (DIFERENÇA)
+    4. Tenta enviar → validação final (igual entrada, mas com verificação de estoque)
+    5. Recebe feedback → notificação e limpeza (igual entrada)
+  </user_experience_flow>
+
+  <testing_focus>
+    - Verificar que estrutura é idêntica à entrada exceto pelas diferenças especificadas
+    - Testar consulta de estoque ao mudar seleções
+    - Validar estados visuais (normal, aviso, erro)
+    - Confirmar que envio é bloqueado quando quantidade > estoque
+    - Garantir que notificações funcionam igual à entrada
+  </testing_focus>
+</task>

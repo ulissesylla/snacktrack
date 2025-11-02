@@ -56,4 +56,22 @@ async function getMovimentacoesByLocal(localId, connection = null) {
   return rows;
 }
 
-module.exports = { create, getEstoqueAtual, getMovimentacoesByProduto, getMovimentacoesByLocal };
+// Nova função para obter estoque atual por produto e local específicos
+async function getEstoqueAtualByProdutoLocal(produtoId, localId, connection = null) {
+  const sql = `
+    SELECT COALESCE(SUM(CASE
+      WHEN tipo = 'Entrada' AND local_destino_id = ? THEN quantidade
+      WHEN tipo = 'Saída' AND local_origem_id = ? THEN -quantidade
+      WHEN tipo = 'Transferência' AND local_origem_id = ? THEN -quantidade
+      WHEN tipo = 'Transferência' AND local_destino_id = ? THEN quantidade
+      ELSE 0 END), 0) AS estoque_atual
+    FROM movimentacoes
+    WHERE produto_id = ?
+  `;
+  const params = [localId, localId, localId, localId, produtoId];
+  const rows = await db.query(sql, params, connection);
+  const val = rows && rows[0] ? rows[0].estoque_atual : 0;
+  return Number(val) || 0;
+}
+
+module.exports = { create, getEstoqueAtual, getMovimentacoesByProduto, getMovimentacoesByLocal, getEstoqueAtualByProdutoLocal };

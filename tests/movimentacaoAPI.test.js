@@ -325,4 +325,46 @@ describe('Movimentacao API Integration Tests', () => {
       expect(response.body.total).toBe(0);
     });
   });
+  
+  describe('GET /api/movimentacoes/estoque', () => {
+    test('should return current stock for a product in a location', async () => {
+      // Arrange
+      movimentacaoData.getEstoqueAtualByProdutoLocal.mockResolvedValue(50);
+
+      // Act
+      const response = await request(app)
+        .get('/api/movimentacoes/estoque')
+        .query({ produto_id: 1, local_id: 1 })
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      // Assert
+      expect(response.body.estoque_atual).toBe(50);
+      expect(response.body.produto_id).toBe(1);
+      expect(response.body.local_id).toBe(1);
+    });
+    
+    test('should return 400 when produto_id or local_id is not provided', async () => {
+      // Act
+      const response = await request(app)
+        .get('/api/movimentacoes/estoque')
+        .query({ produto_id: 1 }) // Missing local_id
+        .set('Accept', 'application/json')
+        .expect(400);
+
+      // Assert
+      expect(response.body.error).toBe('Parâmetros inválidos');
+    });
+    
+    test('should return 400 when both produto_id and local_id are missing', async () => {
+      // Act
+      const response = await request(app)
+        .get('/api/movimentacoes/estoque')
+        .set('Accept', 'application/json')
+        .expect(400);
+
+      // Assert
+      expect(response.body.error).toBe('Parâmetros inválidos');
+    });
+  });
 });

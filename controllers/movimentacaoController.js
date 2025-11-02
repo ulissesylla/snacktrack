@@ -88,6 +88,34 @@ async function listarHistorico(req, res) {
   }
 }
 
+// Nova função para obter estoque atual por produto e local
+async function obterEstoqueAtual(req, res) {
+  try {
+    const { produto_id, local_id } = req.query;
+    
+    // Validação dos parâmetros
+    if (!produto_id || !local_id) {
+      return res.status(400).json({ 
+        error: "Parâmetros inválidos", 
+        message: "produto_id e local_id são obrigatórios" 
+      });
+    }
+
+    // Chama a função de dados para obter o estoque atual
+    const estoque = await movimentacaoData.getEstoqueAtualByProdutoLocal(produto_id, local_id);
+    
+    return res.status(200).json({ 
+      estoque_atual: estoque,
+      produto_id: parseInt(produto_id),
+      local_id: parseInt(local_id)
+    });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ error: "Erro interno", message: err.message || String(err) });
+  }
+}
+
 function handleError(err, res) {
   // domain errors
   if (err && err.code === "ESTOQUE_INSUFICIENTE") {
@@ -128,4 +156,5 @@ module.exports = {
   registrarSaida,
   registrarTransferencia,
   listarHistorico,
+  obterEstoqueAtual,
 };

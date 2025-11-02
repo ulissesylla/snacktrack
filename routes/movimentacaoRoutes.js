@@ -10,5 +10,7 @@ router.post("/entrada", validarEntrada, controller.registrarEntrada);
 router.post("/saida", validarSaida, controller.registrarSaida);
 router.post("/transferencia", validarTransferencia, controller.registrarTransferencia);
 router.get("/historico", controller.listarHistorico);
+// Nova rota para obter estoque atual
+router.get("/estoque", controller.obterEstoqueAtual);
 
 module.exports = router;
