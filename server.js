@@ -8,6 +8,7 @@ const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const localRoutes = require("./routes/localRoutes");
 const produtoRoutes = require("./routes/produtoRoutes");
+const movimentacaoRoutes = require("./routes/movimentacaoRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -24,6 +25,7 @@ app.use(authRoutes);
 app.use("/api/usuarios", userRoutes);
 app.use("/api/locais", localRoutes);
 app.use("/api/produtos", produtoRoutes);
+app.use("/api/movimentacoes", movimentacaoRoutes);
 
 // Routes
 app.use("/", routes);
