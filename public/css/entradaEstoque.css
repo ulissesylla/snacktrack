@@ -67,6 +67,9 @@
     text-align: center;
     font-size: 1rem;
     transition: background-color 0.3s;
+    min-width: 150px; /* Maintain minimum width */
+    position: relative;
+    overflow: hidden;
 }
 
 .btn-primary {
@@ -92,16 +95,39 @@
     background-color: #545b62;
 }
 
+.btn-text {
+    display: inline;
+    transition: opacity 0.2s;
+}
+
 .btn-loading {
     display: none;
+    transition: opacity 0.2s;
+}
+
+/* Maintain button dimensions during loading */
+.loading {
+    position: relative;
 }
 
 .loading .btn-text {
-    display: none;
+    opacity: 0;
+    visibility: hidden;
 }
 
 .loading .btn-loading {
     display: inline;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Prevent text selection during loading */
+.loading .btn-text {
+    pointer-events: none;
 }
 
 /* Estilo para o dropdown de movimentações */
