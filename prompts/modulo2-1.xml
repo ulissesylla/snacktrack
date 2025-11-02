@@ -1,0 +1,137 @@
+<task>
+  <submodule>2.1: Backend de Locais</submodule>
+  <objective>
+    Implementar a API completa para gerenciamento de locais de estoque.
+    - CRUD completo para locais (Create, Read, Update, Delete/Inativar)
+    - Aplicar middleware de autorização: apenas Gerentes podem criar/editar/excluir
+    - Validações: nome obrigatório, capacidade máxima positiva
+    - Soft delete usando campo status
+  </objective>
+
+  <files>
+    <!-- ROTAS PARA LOCAIS -->
+    <file type="backend">
+      <path>routes/localRoutes.js</path>
+      <purpose>Rotas para CRUD de locais com proteção de autorização</purpose>
+      <requirements>
+        - GET /api/locais - Lista todos os locais (acesso: todos usuários autenticados)
+        - GET /api/locais/:id - Busca local por ID (acesso: todos usuários autenticados)
+        - POST /api/locais - Cria novo local (acesso: apenas Gerentes)
+        - PUT /api/locais/:id - Atualiza local (acesso: apenas Gerentes)
+        - DELETE /api/locais/:id - Inativa local (soft delete) (acesso: apenas Gerentes)
+        - Aplicar middleware requireAuth em todas as rotas
+        - Aplicar middleware requireRole(['Gerente']) nas rotas POST, PUT, DELETE
+      </requirements>
+    </file>
+
+    <!-- CONTROLADOR DE LOCAIS -->
+    <file type="backend">
+      <path>controllers/localController.js</path>
+      <purpose>Controlador para operações de locais</purpose>
+      <requirements>
+        - listarLocais: retorna todos os locais ativos (com paginação se necessário)
+        - buscarLocalPorId: retorna local específico
+        - criarLocal: valida dados e cria novo local
+        - atualizarLocal: valida dados e atualiza local existente
+        - inativarLocal: muda status para "Inativo" (soft delete)
+        - Validar dados de entrada:
+          * nome: obrigatório, string
+          * capacidade_maxima: número positivo (opcional)
+          * descricao: string (opcional)
+        - Retornar códigos HTTP apropriados (200, 201, 400, 404, 500)
+      </requirements>
+    </file>
+
+    <!-- SERVIÇO DE LOCAIS -->
+    <file type="backend">
+      <path>services/localService.js</path>
+      <purpose>Lógica de negócio para locais</purpose>
+      <requirements>
+        - listarTodos: retorna todos os locais (filtrar por status se necessário)
+        - buscarPorId: busca local por ID
+        - criar: valida regras de negócio e cria local
+        - atualizar: valida e atualiza local
+        - inativar: muda status para "Inativo"
+        - Validar se local existe antes de operações
+        - Garantir que não há estoque no local antes de inativar (verificação futura)
+      </requirements>
+    </file>
+
+    <!-- CAMADA DE DADOS DE LOCAIS -->
+    <file type="backend">
+      <path>data/localData.js</path>
+      <purpose>Camada de acesso a dados para locais</purpose>
+      <requirements>
+        - findAll: busca todos os locais (com filtro de status ativo por padrão)
+        - findById: busca local por ID
+        - create: insere novo local no banco
+        - update: atualiza local existente
+        - inactivate: muda status para "Inativo"
+        - Usar conexão singleton do database.js
+        - Usar prepared statements para evitar SQL injection
+        - Retornar promises para operações assíncronas
+      </requirements>
+    </file>
+
+    <!-- ATUALIZAÇÃO DO SERVIDOR -->
+    <file type="backend">
+      <path>server.js</path>
+      <purpose>Adicionar rotas de locais ao servidor</purpose>
+      <requirements>
+        - Importar e usar localRoutes
+        - Garantir que as rotas sejam adicionadas após o middleware de sessions
+      </requirements>
+    </file>
+  </files>
+
+  <database_schema>
+    A tabela 'locais' já existe com a estrutura:
+    - id INT AUTO_INCREMENT PRIMARY KEY
+    - nome VARCHAR(100) NOT NULL
+    - capacidade_maxima DECIMAL(10,2)
+    - descricao TEXT
+    - status ENUM('Ativo', 'Inativo') DEFAULT 'Ativo'
+    - data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  </database_schema>
+
+  <permissions_structure>
+    - Rotas GET: requireAuth (todos usuários autenticados)
+    - Rotas POST, PUT, DELETE: requireAuth + requireRole(['Gerente'])
+  </permissions_structure>
+
+  <validation_rules>
+    - nome: obrigatório, string, mínimo 2 caracteres
+    - capacidade_maxima: opcional, se informado deve ser número positivo
+    - descricao: opcional, string
+  </validation_rules>
+
+  <error_handling>
+    - 400: Dados de entrada inválidos
+    - 401: Não autenticado
+    - 403: Não autorizado (usuário não é Gerente)
+    - 404: Local não encontrado
+    - 500: Erro interno do servidor
+  </error_handling>
+
+  <testing_scenarios>
+    1. Listar locais como usuário autenticado → deve retornar 200 com array
+    2. Criar local como Gerente → deve retornar 201 com local criado
+    3. Criar local como Colaborador → deve retornar 403
+    4. Atualizar local como Gerente → deve retornar 200
+    5. Atualizar local como Colaborador → deve retornar 403
+    6. Inativar local como Gerente → deve retornar 200
+    7. Inativar local como Colaborador → deve retornar 403
+    8. Buscar local inexistente → deve retornar 404
+  </testing_scenarios>
+
+  <dependencies>
+    - Módulo 1 completamente implementado (autenticação, middleware de autorização)
+    - Banco de dados com tabela 'locais' criada
+  </dependencies>
+
+  <integration_notes>
+    - As rotas devem ser prefixadas com /api/locais
+    - O middleware de autorização deve ser reutilizado do Módulo 1
+    - Manter consistência com padrões de resposta da API existentes
+  </integration_notes>
+</task>

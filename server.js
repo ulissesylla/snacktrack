@@ -6,6 +6,7 @@ const routes = require("./routes");
 const sessionMiddleware = require("./config/session");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
+const localRoutes = require("./routes/localRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -20,6 +21,7 @@ app.use(sessionMiddleware);
 // auth & user routes
 app.use(authRoutes);
 app.use("/api/usuarios", userRoutes);
+app.use("/api/locais", localRoutes);
 
 // Routes
 app.use("/", routes);
