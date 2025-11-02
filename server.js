@@ -39,9 +39,25 @@ if (require.main === module) {
     try {
       // quick test query (doesn't require any tables)
       await db.query("SELECT 1");
-      app.listen(PORT, () => {
-        console.log(`Server running on http://localhost:${PORT}`);
+      
+      // Try to listen on the specified port, or find an available one
+      const server = app.listen(PORT, () => {
+        console.log(`Server running on http://localhost:${server.address().port}`);
       });
+      
+      // Handle the case where the port is already in use
+      server.on('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+          console.log(`Port ${PORT} is already in use. Trying another port...`);
+          // Try a random available port
+          server.listen(0, () => {
+            console.log(`Server running on http://localhost:${server.address().port}`);
+          });
+        } else {
+          throw err;
+        }
+      });
+      
     } catch (err) {
       console.error("Failed to start application:", err.message || err);
       process.exit(1);
