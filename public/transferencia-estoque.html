@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transferência de Estoque - SnackTrack</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/notify.css">
+</head>
+<body>
+    <div id="navbar-root"></div>
+    
+    <!-- Global Banner for notifications -->
+    <div id="globalBanner" class="banner hidden" role="region" aria-live="assertive"></div>
+
+    <!-- Breadcrumbs -->
+    <div class="breadcrumbs">
+        <a href="/">Home</a> > 
+        <a href="/movimentacoes.html">Movimentações</a> > 
+        <span>Transferência de Estoque</span>
+    </div>
+
+    <!-- Conteúdo Principal -->
+    <main class="main-content">
+        <div class="container">
+            <h1>Transferência de Estoque</h1>
+            <p>Funcionalidade em desenvolvimento...</p>
+            <a href="/">Voltar para a página inicial</a>
+        </div>
+    </main>
+
+    <!-- Notificações -->
+    <div id="notifications"></div>
+
+    <script src="/js/auth.js"></script>
+    <script src="/js/notify.js"></script>
+    <script src="/js/navbar.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Verificar autenticação
+            if (!window.Auth) {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            const user = await window.Auth.checkAuth();
+            if (!user) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            // Configurar logout
+            document.getElementById('logoutBtn').addEventListener('click', window.Auth.logout);
+        });
+    </script>
+</body>
+</html>

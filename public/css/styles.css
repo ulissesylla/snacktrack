@@ -59,6 +59,57 @@ body {
   background: rgba(255, 255, 255, 0.04);
 }
 
+/* Estilos para o dropdown de movimentações */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-toggle {
+  color: #e6eef8;
+  text-decoration: none;
+  margin-left: 18px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.dropdown-toggle:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #0f172a;
+  min-width: 200px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  z-index: 1;
+  list-style-type: none;
+}
+
+.dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+.dropdown-menu li {
+  margin: 0;
+}
+
+.dropdown-menu li a {
+  display: block;
+  padding: 12px 16px;
+  text-decoration: none;
+  color: #e6eef8;
+}
+
+.dropdown-menu li a:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
 main.container {
   padding: 24px 16px;
   margin-top: 8px;
