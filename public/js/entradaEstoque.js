@@ -164,11 +164,11 @@ async function handleSubmit(event) {
         const result = await response.json();
         
         if (response.ok) {
-            showBanner('Entrada registrada com sucesso!');
+            showBanner('Entrada registrada com sucesso!', 'success');
             limparFormulario();
         } else {
             const errorMessage = result.message || result.error || 'Erro ao registrar entrada';
-            showBanner(errorMessage);
+            showBanner(errorMessage, 'error');
         }
     } catch (error) {
         console.error('Erro ao registrar entrada:', error);

@@ -14,10 +14,25 @@
     }
   }
 
-  window.showBanner = function (msg) {
+  // Enhanced showBanner to support different message types while maintaining backward compatibility
+  window.showBanner = function (msg, type = 'error') { // Default to 'error' to maintain backward compatibility
     const banner = getBanner();
     if (!banner) return alert(msg);
     positionBanner(banner);
+    
+    // Set appropriate class based on message type
+    let bannerClass = 'banner ';
+    if (type === 'success') {
+      bannerClass += 'banner-success';
+    } else if (type === 'warning') {
+      bannerClass += 'banner-warning';
+    } else if (type === 'info') {
+      bannerClass += 'banner-info';
+    } else {
+      bannerClass += 'banner-error'; // default for backward compatibility
+    }
+    
+    banner.className = bannerClass;
     banner.innerHTML = `<div class="msg">${msg}</div><button class="close" aria-label="Fechar">X</button>`;
     banner.classList.remove("hidden");
     const btn = banner.querySelector(".close");
@@ -27,6 +42,23 @@
         banner.style.top = "";
       });
     }
+  };
+
+  // Helper functions for different message types (optional - for convenience)
+  window.showSuccessBanner = function (msg) {
+    showBanner(msg, 'success');
+  };
+  
+  window.showErrorBanner = function (msg) {
+    showBanner(msg, 'error');
+  };
+  
+  window.showWarningBanner = function (msg) {
+    showBanner(msg, 'warning');
+  };
+  
+  window.showInfoBanner = function (msg) {
+    showBanner(msg, 'info');
   };
 
   window.hideBanner = function () {
