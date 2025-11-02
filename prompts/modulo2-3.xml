@@ -1,0 +1,151 @@
+<task>
+  <submodule>2.3: Interface de Locais</submodule>
+  <objective>
+    Criar a interface completa para gerenciamento de locais de estoque, seguindo EXATAMENTE o mesmo padrão e qualidade da interface de usuários.
+    - Mesma estrutura HTML, CSS e JavaScript dos arquivos users.html e users.js
+    - Modais para criação e edição
+    - Apenas Gerentes podem ver botões de criar/editar/excluir
+    - Integração com breadcrumbs e navegação existente
+    - Design idêntico ao sistema de usuários
+  </objective>
+
+  <files>
+    <!-- PÁGINA PRINCIPAL DE LOCAIS - MESMO PADRÃO USERS.HTML -->
+    <file type="frontend">
+      <path>public/locais.html</path>
+      <purpose>Página de listagem e gerenciamento de locais - mesmo padrão users.html</purpose>
+      <requirements>
+        - Estrutura HTML IDÊNTICA ao users.html, adaptando para locais
+        - Breadcrumbs: "Home > Locais" (implementar como no sistema atual)
+        - Título da página "Gestão de Locais"
+        - Botão "Novo Local" (visível apenas para Gerentes) - mesmo estilo do "Novo usuário"
+        - Tabela com mesma estrutura e estilo da tabela de usuários:
+          * Colunas: Nome, Capacidade Máxima, Descrição, Status, Ações
+          * Coluna Ações: botões "Editar" e "Inativar" (apenas para Gerentes)
+        - Modal para criar/editar local com mesmo design do modal de usuários:
+          * Campos: Nome (obrigatório), Capacidade Máxima (número), Descrição (textarea), Status (select)
+          * Mesma estrutura de form-row, labels, inputs e error messages
+          * Mesmos botões "Salvar/Criar" e "Cancelar"
+        - Incluir mesma estrutura de scripts: auth.js, navbar.js, locais.js
+      </requirements>
+    </file>
+
+    <!-- LÓGICA JAVASCRIPT PARA LOCAIS - MESMO PADRÃO USERS.JS -->
+    <file type="frontend">
+      <path>public/js/locais.js</path>
+      <purpose>Lógica do frontend para locais - mesmo padrão e estrutura do users.js</purpose>
+      <requirements>
+        - MESMA ESTRUTURA do users.js, adaptando para locais
+        - Verificação de permissão: apenas Gerentes podem acessar (igual users.js)
+        - Função load() para carregar locais da API /api/locais
+        - Preencher tabela com dados dos locais, mesma estrutura de linhas e células
+        - Botão de toggle "Ativar/Desativar" com mesma lógica do users.js
+        - Modal com mesma funcionalidade: criar novo e editar existente
+        - Validação de formulário no frontend:
+          * Nome obrigatório (mínimo 2 caracteres)
+          * Capacidade Máxima deve ser número positivo se preenchido
+        - Mesma lógica de submitLocked para evitar duplicação
+        - Mesmo tratamento de erros e feedback
+        - IDs e classes consistentes com o padrão do sistema
+      </requirements>
+    </file>
+
+    <!-- ESTILOS ESPECÍFICOS PARA LOCAIS - EXTENDENDO STYLES.CSS -->
+    <file type="frontend">
+      <path>public/css/locais.css</path>
+      <purpose>Estilos específicos para locais - seguindo mesmo padrão do users.css</purpose>
+      <requirements>
+        - Manter consistência visual com o restante do sistema
+        - Estilos para tabela de locais - mesmo design da tabela de usuários
+        - Estilos para modal - mesmo design do modal de usuários
+        - Cores, espaçamentos e tipografia consistentes
+        - Estados de hover, focus e disabled iguais aos existentes
+        - Badges para status: "Ativo" (verde), "Inativo" (cinza) - mesmo estilo de usuários
+        - Responsividade igual à página de usuários
+      </requirements>
+    </file>
+
+    <!-- ATUALIZAÇÕES NA NAVEGAÇÃO -->
+    <file type="frontend">
+      <path>public/index.html</path>
+      <purpose>Adicionar link para Locais no menu de navegação</purpose>
+      <requirements>
+        - Adicionar item "Locais" no menu superior, ao lado de "Usuários"
+        - Link deve apontar para locais.html
+        - Item visível para todos usuários autenticados
+        - Mesmo estilo e comportamento dos outros itens do menu
+      </requirements>
+    </file>
+
+    <!-- ATUALIZAÇÕES NO APP PRINCIPAL -->
+    <file type="frontend">
+      <path>public/js/app.js</path>
+      <purpose>Atualizar breadcrumbs para página de locais</purpose>
+      <requirements>
+        - Adicionar rota para locais.html no sistema de breadcrumbs
+        - Garantir que a navegação para locais seja registrada
+        - Mesmo comportamento da página de usuários
+      </requirements>
+    </file>
+  </files>
+
+  <code_pattern_reference>
+    <reference_file>users.html</reference_file>
+    <patterns>
+      - Estrutura HTML completa com modal
+      - Uso de aria-hidden e atributos de acessibilidade
+      - Formulário com validação visual
+      - Tabela com thead e tbody
+      - IDs consistentes: #btnNew, #modalClose, #btnCancel, #btnSubmit
+    </patterns>
+  </code_pattern_reference>
+
+  <code_pattern_reference>
+    <reference_file>users.js</reference_file>
+    <patterns>
+      - Verificação de permissão no DOMContentLoaded
+      - Função load() assíncrona para carregar dados
+      - Manipulação de modal: setOpen(open)
+      - Validação de formulário com clearErrors() e validate()
+      - Prevenção de submit duplicado com submitLocked
+      - Tratamento de erros try/catch
+      - Atualização da tabela após operações
+    </patterns>
+  </code_pattern_reference>
+
+  <api_endpoints>
+    - GET /api/locais - para carregar lista (igual /api/usuarios)
+    - POST /api/locais - para criar (igual POST /api/usuarios)
+    - PUT /api/locais/:id - para atualizar (igual PUT /api/usuarios/:id)
+    - DELETE /api/locais/:id - para inativar (igual DELETE /api/usuarios/:id)
+  </api_endpoints>
+
+  <field_mappings>
+    - users.nome → locais.nome
+    - users.email → locais.capacidade_maxima
+    - users.funcao → locais.descricao
+    - users.status → locais.status
+    - Adicionar: locais.descricao (nova field)
+  </field_mappings>
+
+  <validation_rules>
+    - nome: obrigatório, mínimo 2 caracteres (igual users.nome)
+    - capacidade_maxima: opcional, número positivo
+    - descricao: opcional, texto livre
+    - status: select com "Ativo" e "Inativo" (igual users.status)
+  </validation_rules>
+
+  <dependencies>
+    - Sub-módulo 2.1 implementado (API de locais funcionando)
+    - Módulo 1 implementado (autenticação e auth.js)
+    - Arquivos users.html e users.js como referência de padrão
+  </dependencies>
+
+    <implementation_notes>
+    - COPIAR E ADAPTAR a estrutura de users.html para locais.html
+    - COPIAR E ADAPTAR a lógica de users.js para locais.js
+    - Manter EXATAMENTE os mesmos padrões de código, nomes de variáveis e estrutura
+    - Apenas alterar os campos específicos de usuários para locais
+    - Garantir que o Copilot use os arquivos users.* como template exato
+  </implementation_notes>
+</task>

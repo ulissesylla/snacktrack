@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Locais - SnackTrack</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="/css/locais.css" />
+  </head>
+  <body>
+    <div id="navbar-root"></div>
+    <!-- Global banner for non-blocking persistent messages -->
+    <div id="globalBanner" class="banner hidden" role="region" aria-live="assertive"></div>
+    <!-- breadcrumbs removed per request -->
+    <main class="container">
+      <h1>Gestão de Locais</h1>
+      <button id="btnNew">Novo Local</button>
+      <table id="locaisTable">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Capacidade Máxima</th>
+            <th>Descrição</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </main>
+
+    <!-- Modal for creating/editing a local -->
+    <div id="localModal" class="modal-overlay" aria-hidden="true">
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modalTitle"
+      >
+        <div class="modal-header">
+          <h2 id="modalTitle">Novo Local</h2>
+          <button id="modalClose" class="modal-close" aria-label="Fechar">
+            ×
+          </button>
+        </div>
+        <form id="localForm" class="modal-body">
+          <div class="form-row">
+            <label for="nome">Nome</label>
+            <input id="nome" name="nome" type="text" required />
+            <div class="error" id="err-nome"></div>
+          </div>
+          <div class="form-row">
+            <label for="capacidade">Capacidade Máxima</label>
+            <input
+              id="capacidade"
+              name="capacidade"
+              type="number"
+              step="0.01"
+              min="0"
+            />
+            <div class="error" id="err-capacidade"></div>
+          </div>
+          <div class="form-row">
+            <label for="descricao">Descrição</label>
+            <textarea id="descricao" name="descricao" rows="3"></textarea>
+            <div class="error" id="err-descricao"></div>
+          </div>
+          <div class="form-row">
+            <label for="status">Status</label>
+            <select id="status" name="status">
+              <option value="Ativo">Ativo</option>
+              <option value="Inativo">Inativo</option>
+            </select>
+            <div class="error" id="err-status"></div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" id="btnSubmit">Criar</button>
+            <button type="button" id="btnCancel">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <link rel="stylesheet" href="/css/navbar.css" />
+    <script src="/js/auth.js"></script>
+    <script src="/js/navbar.js"></script>
+  <script src="/js/notify.js"></script>
+    <script src="/js/locais.js"></script>
+  </body>
+</html>
