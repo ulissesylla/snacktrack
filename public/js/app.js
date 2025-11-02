@@ -1,11 +1,6 @@
 document.addEventListener("DOMContentLoaded", async () => {
   const statusEl = document.getElementById("status");
-  const breadcrumbsEl = document.getElementById("breadcrumbs");
   const navRight = document.getElementById("navRight");
-
-  // Initialize breadcrumbs
-  const breadcrumbs = new Breadcrumbs(breadcrumbsEl);
-  breadcrumbs.render();
 
   // Navbar handles user rendering (Auth and user links). No duplication here.
 
@@ -16,11 +11,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       const route = a.dataset.route || "home";
       navigateTo(route);
     });
-  });
-
-  document.addEventListener("breadcrumb:navigate", (e) => {
-    const route = e.detail && e.detail.route;
-    if (route) navigateTo(route);
   });
 
   function navigateTo(route) {
