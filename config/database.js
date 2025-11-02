@@ -30,7 +30,11 @@ class Database {
   }
 
   // Execute a query: returns [rows, fields]
-  async query(sql, params = []) {
+  async query(sql, params = [], connection = null) {
+    if (connection) {
+      const [rows] = await connection.execute(sql, params);
+      return rows;
+    }
     const [rows] = await this.pool.execute(sql, params);
     return rows;
   }
@@ -38,6 +42,40 @@ class Database {
   // Optional: get raw pool
   getPool() {
     return this.pool;
+  }
+
+  // Transaction helpers
+  async beginTransaction() {
+    const connection = await this.pool.getConnection();
+    await connection.beginTransaction();
+    return connection;
+  }
+
+  async commit(connection) {
+    if (!connection) return;
+    try {
+      await connection.commit();
+    } finally {
+      // release in any case
+      try {
+        connection.release();
+      } catch (e) {
+        /* ignore */
+      }
+    }
+  }
+
+  async rollback(connection) {
+    if (!connection) return;
+    try {
+      await connection.rollback();
+    } finally {
+      try {
+        connection.release();
+      } catch (e) {
+        /* ignore */
+      }
+    }
   }
 }
 
