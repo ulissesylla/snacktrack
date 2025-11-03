@@ -7,5 +7,8 @@ router.use(requireAuth);
 
 router.get("/stats", controller.getStats);
 router.get("/ultimas-movimentacoes", controller.getUltimasMovimentacoes);
+router.get("/consumo-medio", controller.getConsumoMedio);
+router.get("/estatisticas-avancadas", controller.getEstatisticasAvancadas);
+router.get("/rankings", controller.getRankings);
 
 module.exports = router;
