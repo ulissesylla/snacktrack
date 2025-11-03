@@ -10,6 +10,7 @@ const localRoutes = require("./routes/localRoutes");
 const produtoRoutes = require("./routes/produtoRoutes");
 const movimentacaoRoutes = require("./routes/movimentacaoRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
+const alertaRoutes = require("./routes/alertaRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,6 +29,7 @@ app.use("/api/locais", localRoutes);
 app.use("/api/produtos", produtoRoutes);
 app.use("/api/movimentacoes", movimentacaoRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/alertas", alertaRoutes);
 
 // Routes
 app.use("/", routes);
