@@ -1,0 +1,191 @@
+<task>
+  <submodule>4.3: Histórico e Consultas Complexas</submodule>
+  <objective>
+    Implementar endpoint avançado para histórico de movimentações com filtros abrangentes e paginação.
+    - Criar serviço para consultas complexas com múltiplos filtros
+    - Implementar paginação eficiente no banco de dados
+    - Manter performance mesmo com grandes volumes de dados
+    - Fornecer dados completos para o frontend de histórico
+  </objective>
+
+  <files>
+    <!-- SERVIÇO DE HISTÓRICO COM FILTROS -->
+    <file type="backend">
+      <path>services/historicoService.js</path>
+      <purpose>Serviço para consultas complexas do histórico de movimentações</purpose>
+      <requirements>
+        - listarMovimentacoesFiltradas: método principal com suporte a filtros e paginação
+        - Aplicar filtros: data_inicio, data_fim, produto_id, tipo_movimentacao, local_id
+        - Implementar paginação: pagina, limite_por_pagina
+        - Retornar dados completos: movimentações com joins para nomes de produtos e locais
+        - Calcular totais: total_registros, total_paginas
+        - Ordenação padrão: data_movimentacao decrescente
+        - Otimizar queries com índices apropriados
+        - Validar parâmetros de filtro antes de executar query
+      </requirements>
+    </file>
+
+    <!-- ATUALIZAÇÃO DO CONTROLADOR DE MOVIMENTAÇÕES -->
+    <file type="backend">
+      <path>controllers/movimentacaoController.js</path>
+      <purpose>Adicionar método para histórico com filtros ao controlador existente</purpose>
+      <requirements>
+        - listarHistorico: novo método para endpoint de histórico
+        - Extrair query parameters: data_inicio, data_fim, produto_id, tipo, local_id, pagina, limite
+        - Validar e sanitizar parâmetros de entrada
+        - Chamar historicoService.listarMovimentacoesFiltradas
+        - Retornar resposta padronizada com dados e metadados de paginação
+        - Tratar erros de validação e banco de dados
+        - Manter consistência com outros métodos do controlador
+      </requirements>
+    </file>
+
+    <!-- ATUALIZAÇÃO DAS ROTAS DE MOVIMENTAÇÕES -->
+    <file type="backend">
+      <path>routes/movimentacaoRoutes.js</path>
+      <purpose>Adicionar endpoint de histórico às rotas existentes</purpose>
+      <requirements>
+        - Adicionar GET /api/movimentacoes/historico - Novo endpoint para histórico com filtros
+        - Manter endpoints existentes (entrada, saída, transferência) inalterados
+        - Aplicar middleware requireAuth no novo endpoint
+        - Todos os usuários autenticados podem acessar o histórico
+        - Manter mesma estrutura de rotas existente
+      </requirements>
+    </file>
+
+    <!-- CAMADA DE DADOS PARA CONSULTAS COMPLEXAS -->
+    <file type="backend">
+      <path>data/historicoData.js</path>
+      <purpose>Camada de dados especializada para consultas complexas do histórico</purpose>
+      <requirements>
+        - findByFilters: método principal para buscar movimentações com filtros
+        - countByFilters: contar total de registros para paginação
+        - Construir query dinâmica baseada nos filtros fornecidos
+        - Usar prepared statements para segurança
+        - Aplicar limites e offsets para paginação
+        - Fazer joins com tabelas: produtos, locais (origem e destino), usuarios
+        - Retornar dados formatados com nomes ao invés de apenas IDs
+      </requirements>
+    </file>
+  </files>
+
+  <api_endpoint>
+    <method>GET</method>
+    <path>/api/movimentacoes/historico</path>
+    <query_parameters>
+      - data_inicio: string (date) - Data inicial para filtro
+      - data_fim: string (date) - Data final para filtro  
+      - produto_id: number - ID do produto para filtrar
+      - tipo: string - Tipo de movimentação (Entrada, Saída, Transferência)
+      - local_id: number - ID do local (filtra origem OU destino)
+      - pagina: number - Página atual (padrão: 1)
+      - limite: number - Registros por página (padrão: 50, máximo: 100)
+    </query_parameters>
+    <response>
+      {
+        "success": true,
+        "movimentacoes": [
+          {
+            "id": 1,
+            "data_movimentacao": "2024-01-15T10:30:00Z",
+            "tipo": "Entrada",
+            "produto_id": 5,
+            "produto_nome": "Farinha de Trigo",
+            "quantidade": 50,
+            "local_origem_id": null,
+            "local_origem_nome": null,
+            "local_destino_id": 1,
+            "local_destino_nome": "Loja Principal",
+            "usuario_id": 1,
+            "usuario_nome": "Administrador"
+          }
+        ],
+        "paginacao": {
+          "pagina_atual": 1,
+          "limite_por_pagina": 50,
+          "total_registros": 1280,
+          "total_paginas": 26
+        }
+      }
+    </response>
+  </api_endpoint>
+
+  <filter_logic>
+    <filter>
+      <parameter>data_inicio/data_fim</parameter>
+      <logic>Aplicar WHERE data_movimentacao BETWEEN ? AND ?</logic>
+    </filter>
+    <filter>
+      <parameter>produto_id</parameter>
+      <logic>Aplicar WHERE produto_id = ?</logic>
+    </filter>
+    <filter>
+      <parameter>tipo</parameter>
+      <logic>Aplicar WHERE tipo = ?</logic>
+    </filter>
+    <filter>
+      <parameter>local_id</parameter>
+      <logic>Aplicar WHERE (local_origem_id = ? OR local_destino_id = ?)</logic>
+    </filter>
+  </filter_logic>
+
+  <pagination_implementation>
+    <approach>Paginação no banco de dados</approach>
+    <logic>
+      - Calcular offset: (pagina - 1) * limite
+      - Aplicar LIMIT e OFFSET na query principal
+      - Executar query COUNT separada para obter total_registros
+      - Calcular total_paginas: Math.ceil(total_registros / limite)
+    </logic>
+    <defaults>
+      - pagina: 1
+      - limite: 50
+      - máximo_limite: 100
+    </defaults>
+  </pagination_implementation>
+
+  <performance_considerations>
+    - Índices necessários: data_movimentacao, produto_id, tipo, local_origem_id, local_destino_id
+    - Usar INNER JOIN em vez de subqueries quando possível
+    - Limitar número máximo de registros por página
+    - Cache para consultas frequentes com mesmos filtros (opcional)
+  </performance_considerations>
+
+  <validation_rules>
+    - data_inicio/data_fim: devem ser datas válidas, data_inicio <= data_fim
+    - produto_id: deve existir na tabela produtos
+    - tipo: deve ser um dos valores: Entrada, Saída, Transferência
+    - local_id: deve existir na tabela locais
+    - pagina: número inteiro positivo
+    - limite: número entre 1 e 100
+  </validation_rules>
+
+  <integration_notes>
+    - Reutilizar controlador e rotas existentes de movimentações
+    - Manter consistência com estrutura de responses da API
+    - Este endpoint será consumido pelo Sub-módulo 4.7 (Frontend de Histórico)
+    - Complementa o endpoint básico do Sub-módulo 4.1
+  </integration_notes>
+
+  <dependencies>
+    - Sub-módulo 4.1 implementado (base do dashboard)
+    - Módulo 3 implementado (estrutura de movimentações)
+    - Tabelas relacionais: produtos, locais, usuarios
+  </dependencies>
+
+  <testing_focus>
+    - Filtro por data: retorna apenas movimentações no intervalo
+    - Filtro por produto: retorna apenas movimentações do produto específico
+    - Filtro por tipo: retorna apenas movimentações do tipo especificado
+    - Filtro por local: retorna movimentações onde o local é origem OU destino
+    - Paginação: retorna número correto de registros por página
+    - Ordenação: registros retornados por data decrescente
+    - Metadados: informações de paginação corretas
+  </testing_focus>
+
+  <next_steps_preparation>
+    - Este endpoint será usado pelo Sub-módulo 4.7 (Frontend de Histórico)
+    - Estrutura preparada para futuras expansões (mais filtros, ordenação personalizada)
+    - Base para funcionalidades de exportação futuras
+  </next_steps_preparation>
+</task>

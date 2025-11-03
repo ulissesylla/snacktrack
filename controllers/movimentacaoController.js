@@ -116,6 +116,46 @@ async function obterEstoqueAtual(req, res) {
   }
 }
 
+// Nova função para histórico com filtros
+const historicoService = require("../services/historicoService");
+
+async function listarHistoricoAvancado(req, res) {
+  try {
+    const {
+      data_inicio,
+      data_fim,
+      produto_id,
+      tipo,
+      local_id,
+      pagina,
+      limite
+    } = req.query;
+
+    // Chama o serviço para obter movimentações filtradas
+    const resultado = await historicoService.listarMovimentacoesFiltradas({
+      data_inicio,
+      data_fim,
+      produto_id,
+      tipo,
+      local_id,
+      pagina,
+      limite
+    });
+
+    return res.status(200).json({
+      success: true,
+      movimentacoes: resultado.movimentacoes,
+      paginacao: resultado.paginacao
+    });
+  } catch (err) {
+    console.error("Erro ao listar histórico de movimentações:", err);
+    return res.status(500).json({ 
+      error: "Erro interno", 
+      message: err.message || String(err) 
+    });
+  }
+}
+
 function handleError(err, res) {
   // domain errors
   if (err && err.code === "ESTOQUE_INSUFICIENTE") {
@@ -155,6 +195,7 @@ module.exports = {
   registrarEntrada,
   registrarSaida,
   registrarTransferencia,
-  listarHistorico,
+  listarHistorico, // Manter o método original
+  listarHistoricoAvancado, // Novo método para histórico avançado
   obterEstoqueAtual,
 };

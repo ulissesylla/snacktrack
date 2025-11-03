@@ -12,5 +12,7 @@ router.post("/transferencia", validarTransferencia, controller.registrarTransfer
 router.get("/historico", controller.listarHistorico);
 // Nova rota para obter estoque atual
 router.get("/estoque", controller.obterEstoqueAtual);
+// Nova rota para histórico avançado com filtros
+router.get("/historico-avancado", controller.listarHistoricoAvancado);
 
 module.exports = router;
