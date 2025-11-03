@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transferência de Estoque - SnackTrack</title>
-    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="/css/entradaEstoque.css">
     <link rel="stylesheet" href="/css/notify.css">
 </head>
 <body>
@@ -13,40 +14,70 @@
     <!-- Global Banner for notifications -->
     <div id="globalBanner" class="banner hidden" role="region" aria-live="assertive"></div>
 
-
-
     <!-- Conteúdo Principal -->
     <main class="main-content">
         <div class="container">
             <h1>Transferência de Estoque</h1>
-            <p>Funcionalidade em desenvolvimento...</p>
-            <a href="/">Voltar para a página inicial</a>
+            
+            <div class="card">
+                <form id="formTransferencia">
+                    <div class="form-group">
+                        <label for="produtoId">Produto *</label>
+                        <select class="form-control" id="produtoId" name="produto_id" required>
+                            <option value="">Selecione um produto</option>
+                            <!-- Preenchido via JavaScript -->
+                        </select>
+                        <div class="error-message" id="produtoError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="localOrigemId">Local de Origem *</label>
+                        <select class="form-control" id="localOrigemId" name="local_origem_id" required>
+                            <option value="">Selecione o local de origem</option>
+                            <!-- Preenchido via JavaScript -->
+                        </select>
+                        <div class="error-message" id="localOrigemError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="localDestinoId">Local de Destino *</label>
+                        <select class="form-control" id="localDestinoId" name="local_destino_id" required>
+                            <option value="">Selecione o local de destino</option>
+                            <!-- Preenchido via JavaScript -->
+                        </select>
+                        <div class="error-message" id="localDestinoError"></div>
+                    </div>
+
+                    <!-- Elemento para exibir estoque disponível -->
+                    <div class="form-group">
+                        <label>Estoque Disponível no Local de Origem</label>
+                        <div id="estoqueDisponivel" class="estoque-info">
+                            Selecione produto e local de origem para ver o estoque
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="quantidade">Quantidade *</label>
+                        <input type="number" class="form-control" id="quantidade" name="quantidade" 
+                               placeholder="Ex: 10.5" min="0.01" step="0.01" required>
+                        <div class="error-message" id="quantidadeError"></div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="btnSubmit">
+                            <span class="btn-text">Transferir</span>
+                            <span class="btn-loading" style="display: none;">Carregando...</span>
+                        </button>
+                        <a href="/" class="btn btn-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
         </div>
     </main>
-
-    <!-- Notificações -->
-    <div id="notifications"></div>
 
     <script src="/js/auth.js"></script>
     <script src="/js/notify.js"></script>
     <script src="/js/navbar.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Verificar autenticação
-            if (!window.Auth) {
-                window.location.href = '/login.html';
-                return;
-            }
-            
-            const user = await window.Auth.checkAuth();
-            if (!user) {
-                window.location.href = '/login.html';
-                return;
-            }
-
-            // Configurar logout
-            document.getElementById('logoutBtn').addEventListener('click', window.Auth.logout);
-        });
-    </script>
+    <script src="/js/transferenciaEstoque.js"></script>
 </body>
 </html>
