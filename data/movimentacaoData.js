@@ -74,4 +74,52 @@ async function getEstoqueAtualByProdutoLocal(produtoId, localId, connection = nu
   return Number(val) || 0;
 }
 
-module.exports = { create, getEstoqueAtual, getMovimentacoesByProduto, getMovimentacoesByLocal, getEstoqueAtualByProdutoLocal };
+/**
+ * Obter estoque atual para todos os produtos em todos os locais
+ * @param {Object} params - Parâmetros de consulta
+ * @param {number} params.produto_id - ID do produto (opcional)
+ * @param {number} params.local_id - ID do local (opcional)
+ * @param {connection} connection - Conexão de banco de dados (opcional)
+ * @returns {Array} Lista de estoques atuais
+ */
+async function getEstoqueAtualTodos(params = {}, connection = null) {
+  const { produto_id, local_id } = params;
+  
+  let sql = `
+    SELECT 
+      p.id AS produto_id,
+      p.nome AS produto_nome,
+      l.id AS local_id,
+      l.nome AS local_nome,
+      COALESCE(SUM(CASE
+        WHEN m.tipo = 'Entrada' AND m.local_destino_id = l.id THEN m.quantidade
+        WHEN m.tipo = 'Saída' AND m.local_origem_id = l.id THEN -m.quantidade
+        WHEN m.tipo = 'Transferência' AND m.local_origem_id = l.id THEN -m.quantidade
+        WHEN m.tipo = 'Transferência' AND m.local_destino_id = l.id THEN m.quantidade
+        ELSE 0 END), 0) AS estoque_atual
+    FROM produtos p
+    CROSS JOIN locais l
+    LEFT JOIN movimentacoes m ON p.id = m.produto_id
+    WHERE p.status = 'Disponível' AND l.status = 'Ativo'
+  `;
+  
+  const queryParams = [];
+  
+  // Adicionar filtros se fornecidos
+  if (produto_id) {
+    sql += " AND p.id = ?";
+    queryParams.push(produto_id);
+  }
+  
+  if (local_id) {
+    sql += " AND l.id = ?";
+    queryParams.push(local_id);
+  }
+  
+  sql += " GROUP BY p.id, p.nome, l.id, l.nome HAVING estoque_atual > 0";
+  
+  const rows = await db.query(sql, queryParams, connection);
+  return rows;
+}
+
+module.exports = { create, getEstoqueAtual, getMovimentacoesByProduto, getMovimentacoesByLocal, getEstoqueAtualByProdutoLocal, getEstoqueAtualTodos };

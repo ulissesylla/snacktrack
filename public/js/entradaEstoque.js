@@ -44,11 +44,21 @@ async function carregarProdutos() {
             preencherSelectProdutos(produtos);
         } else {
             console.error('Erro ao carregar produtos:', data);
-            showBanner('Erro ao carregar produtos: ' + (data.message || 'Erro desconhecido'));
+            // Usar o sistema de notificações existente (igual produtos.js)
+            if (typeof window.showBanner === 'function') {
+                window.showBanner('Erro ao carregar produtos: ' + (data.message || 'Erro desconhecido'));
+            } else {
+                console.error('Erro ao carregar produtos: ' + (data.message || 'Erro desconhecido'));
+            }
         }
     } catch (error) {
         console.error('Erro ao carregar produtos:', error);
-        showBanner('Erro de rede ao carregar produtos');
+        // Usar o sistema de notificações existente (igual produtos.js)
+        if (typeof window.showBanner === 'function') {
+            window.showBanner('Erro de rede ao carregar produtos');
+        } else {
+            console.error('Erro de rede ao carregar produtos');
+        }
     }
 }
 
@@ -69,11 +79,21 @@ async function carregarLocais() {
             preencherSelectLocais(locais);
         } else {
             console.error('Erro ao carregar locais:', data);
-            showBanner('Erro ao carregar locais: ' + (data.message || 'Erro desconhecido'));
+            // Usar o sistema de notificações existente (igual produtos.js)
+            if (typeof window.showBanner === 'function') {
+                window.showBanner('Erro ao carregar locais: ' + (data.message || 'Erro desconhecido'));
+            } else {
+                console.error('Erro ao carregar locais: ' + (data.message || 'Erro desconhecido'));
+            }
         }
     } catch (error) {
         console.error('Erro ao carregar locais:', error);
-        showBanner('Erro de rede ao carregar locais');
+        // Usar o sistema de notificações existente (igual produtos.js)
+        if (typeof window.showBanner === 'function') {
+            window.showBanner('Erro de rede ao carregar locais');
+        } else {
+            console.error('Erro de rede ao carregar locais');
+        }
     }
 }
 
@@ -164,11 +184,21 @@ async function handleSubmit(event) {
         const result = await response.json();
         
         if (response.ok) {
-            showBanner('Entrada registrada com sucesso!', 'success');
+            // Usar o sistema de notificações existente (igual produtos.js)
+            if (typeof window.showBanner === 'function') {
+                window.showBanner('Entrada registrada com sucesso!');
+            } else {
+                console.log('Entrada registrada com sucesso!');
+            }
             limparFormulario();
         } else {
             const errorMessage = result.message || result.error || 'Erro ao registrar entrada';
-            showBanner(errorMessage, 'error');
+            // Usar o sistema de notificações existente (igual produtos.js)
+            if (typeof window.showBanner === 'function') {
+                window.showBanner(errorMessage);
+            } else {
+                console.error(errorMessage);
+            }
         }
     } catch (error) {
         console.error('Erro ao registrar entrada:', error);

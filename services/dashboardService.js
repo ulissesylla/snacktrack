@@ -223,11 +223,23 @@ async function getLocaisComMaiorMovimentacao(params = {}) {
   });
 }
 
+/**
+ * Obter estoque atual de todos os produtos
+ * @param {Object} params - Parâmetros de consulta
+ * @param {number} params.produto_id - ID do produto (opcional)
+ * @param {number} params.local_id - ID do local (opcional)
+ * @returns {Array} Lista de estoques atuais
+ */
+async function getEstoqueAtualTodos(params = {}) {
+  return await movimentacaoData.getEstoqueAtualTodos(params);
+}
+
 module.exports = { 
   getEstatisticasBasicas, 
   getUltimasMovimentacoes,
   calcularConsumoMedio,
   getEstatisticasAvancadas,
   getProdutosMaisMovimentados,
-  getLocaisComMaiorMovimentacao
+  getLocaisComMaiorMovimentacao,
+  getEstoqueAtualTodos
 };

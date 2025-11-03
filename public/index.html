@@ -3,24 +3,102 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>SnackTrack</title>
+    <title>SnackTrack - Dashboard</title>
     <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="/css/dashboard.css" />
+    <link rel="stylesheet" href="/css/notify.css" />
   </head>
   <body>
     <div id="navbar-root"></div>
 
-    <!-- Breadcrumbs removed -->
+    <!-- Breadcrumbs -->
+    <div class="breadcrumbs">
+      <a href="/">Home</a> > 
+      <span>Dashboard</span>
+    </div>
 
     <main id="app" class="container">
-      <h1>Bem-vindo ao SnackTrack</h1>
-      <p>Use o menu superior para navegar pelo sistema.</p>
-      <div id="status"></div>
+      <h1>Dashboard Principal</h1>
+      
+      <!-- Cards de Estatísticas -->
+      <div class="dashboard-grid">
+        <div class="stat-card produtos">
+          <div class="card-icon">📦</div>
+          <div class="card-number" id="totalProdutos">0</div>
+          <div class="card-label">Total de Produtos</div>
+        </div>
+        
+        <div class="stat-card locais">
+          <div class="card-icon">🏪</div>
+          <div class="card-number" id="totalLocais">0</div>
+          <div class="card-label">Total de Locais</div>
+        </div>
+        
+        <div class="stat-card movimentacoes">
+          <div class="card-icon">🔄</div>
+          <div class="card-number" id="totalMovimentacoes">0</div>
+          <div class="card-label">Total de Movimentações</div>
+        </div>
+        
+        <div class="stat-card alertas">
+          <div class="card-icon">⚠️</div>
+          <div class="card-number" id="alertasAtivos">0</div>
+          <div class="card-label">Alertas Ativos</div>
+          <span class="alertas-badge hidden" id="alertasBadge"></span>
+        </div>
+      </div>
+      
+      <!-- Seção de Estoque Atual -->
+      <div class="dashboard-section">
+        <h2>Estoque Atual</h2>
+        <table class="dashboard-table" id="estoqueTable">
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Local</th>
+              <th>Estoque Atual</th>
+              <th>Consumo Médio</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="4">Carregando estoque...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Seção de Últimas Movimentações -->
+      <div class="dashboard-section">
+        <h2>Últimas Movimentações</h2>
+        <table class="dashboard-table" id="movimentacoesTable">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Tipo</th>
+              <th>Produto</th>
+              <th>Quantidade</th>
+              <th>Local</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="5">Carregando movimentações...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </main>
+
+    <!-- Notificações -->
+    <div id="notifications"></div>
 
     <script src="/js/breadcrumbs.js"></script>
     <link rel="stylesheet" href="/css/navbar.css" />
     <script src="/js/auth.js"></script>
+    <script src="/js/notify.js"></script>
     <script src="/js/navbar.js"></script>
+    <script src="/js/dashboard.js"></script>
     <script src="/js/app.js"></script>
   </body>
 </html>

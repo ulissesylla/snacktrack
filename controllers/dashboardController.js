@@ -133,10 +133,37 @@ async function getRankings(req, res) {
   }
 }
 
+/**
+ * Obter estoque atual de todos os produtos
+ */
+async function getEstoqueAtual(req, res) {
+  try {
+    const { produto_id, local_id } = req.query;
+    
+    const params = {};
+    if (produto_id) params.produto_id = parseInt(produto_id);
+    if (local_id) params.local_id = parseInt(local_id);
+    
+    const estoque = await dashboardService.getEstoqueAtualTodos(params);
+    
+    return res.status(200).json({ 
+      success: true,
+      estoque: estoque
+    });
+  } catch (err) {
+    console.error("Erro ao obter estoque atual:", err);
+    return res.status(500).json({ 
+      error: "Erro interno", 
+      message: err.message || String(err) 
+    });
+  }
+}
+
 module.exports = { 
   getStats, 
   getUltimasMovimentacoes,
   getConsumoMedio,
   getEstatisticasAvancadas,
-  getRankings
+  getRankings,
+  getEstoqueAtual
 };
