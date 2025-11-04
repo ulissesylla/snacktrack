@@ -41,13 +41,22 @@ module.exports = app;
 if (require.main === module) {
   async function start() {
     try {
-      // quick test query (doesn't require any tables)
-      await db.query("SELECT 1");
-      
-      // Try to listen on the specified port, or find an available one
+      // Try to listen on the specified port first
       const server = app.listen(PORT, () => {
         console.log(`Server running on http://localhost:${server.address().port}`);
       });
+      
+      // Then try to test the database connection
+      // Note: This connection test may fail if the database is not yet ready
+      // It's better to allow the app to start and handle database issues gracefully
+      try {
+        // quick test query (doesn't require any tables)
+        await db.query("SELECT 1");
+        console.log("Database connection successful");
+      } catch (dbError) {
+        console.warn("Database connection failed:", dbError.message);
+        console.warn("Application will continue running but may have limited functionality");
+      }
       
       // Handle the case where the port is already in use
       server.on('error', (err) => {
