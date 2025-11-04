@@ -7,34 +7,49 @@ class Database {
 
     // Check if running on Railway or in production environment
     if (process.env.RAILWAY_DEPLOYMENT_ID || process.env.NODE_ENV === 'production') {
-      // Use Railway's actual environment variables
-      // Note: Railway uses different variable names than standard MySQL
-      const {
-        MYSQLHOST,
-        MYSQLPORT,
-        MYSQLUSER,
-        MYSQLPASSWORD,
-        MYSQLDATABASE
-      } = process.env;
+      let host, port, user, password, database;
 
-      console.log("Running in production/Railway environment");
-      console.log("MYSQLHOST:", MYSQLHOST);
-      console.log("MYSQLPORT:", MYSQLPORT);
-      console.log("MYSQLUSER:", MYSQLUSER);
-      console.log("MYSQLDATABASE:", MYSQLDATABASE ? "SET" : "NOT SET");
-
-      if (!MYSQLHOST || !MYSQLPORT || !MYSQLUSER || !MYSQLPASSWORD || !MYSQLDATABASE) {
-        console.error("Missing required environment variables for Railway database connection!");
-        console.error("Available env vars:", Object.keys(process.env).filter(key => key.includes('MYSQL') || key.includes('RAILWAY')));
-        console.error("Ensure your Railway database is properly linked to your application.");
+      // Try Railway's specific variable names first
+      if (process.env.MYSQLHOST && process.env.MYSQLPORT && process.env.MYSQLUSER && process.env.MYSQLPASSWORD && process.env.MYSQLDATABASE) {
+        // Use Railway's actual environment variables
+        host = process.env.MYSQLHOST;
+        port = process.env.MYSQLPORT;
+        user = process.env.MYSQLUSER;
+        password = process.env.MYSQLPASSWORD;
+        database = process.env.MYSQLDATABASE;
+      } else if (process.env.DATABASE_URL) {
+        // Alternative: Parse DATABASE_URL if available
+        // Example: mysql://user:password@host:port/database
+        const dbUrl = process.env.DATABASE_URL;
+        const matches = dbUrl.match(/mysql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
+        if (matches) {
+          user = matches[1];
+          password = matches[2];
+          host = matches[3];
+          port = matches[4];
+          database = matches[5];
+        } else {
+          throw new Error("Invalid DATABASE_URL format");
+        }
+      } else {
+        // Fallback error if no database configuration is found
+        console.error("No database configuration found!");
+        console.error("Available env vars:", Object.keys(process.env).filter(key => key.includes('MYSQL') || key.includes('RAILWAY') || key.includes('DATABASE')));
+        throw new Error("Database configuration missing");
       }
 
+      console.log("Running in production/Railway environment");
+      console.log("Database Host:", host);
+      console.log("Database Port:", port);
+      console.log("Database User:", user);
+      console.log("Database Name:", database ? database : "NOT SET");
+
       this.pool = mysql.createPool({
-        host: MYSQLHOST,
-        user: MYSQLUSER,
-        password: MYSQLPASSWORD,
-        database: MYSQLDATABASE,
-        port: Number(MYSQLPORT),
+        host: host,
+        user: user,
+        password: password,
+        database: database,
+        port: Number(port),
         waitForConnections: true,
         connectionLimit: 10,
         queueLimit: 0,
