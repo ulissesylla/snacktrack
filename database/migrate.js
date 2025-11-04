@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     funcao ENUM('Gerente', 'Colaborador') NOT NULL DEFAULT 'Colaborador',
     status ENUM('Ativo', 'Inativo') DEFAULT 'Ativo',
     data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    data_atualizacao TIMESTAMP NULL
 );
 
 -- Tabela de locais (Módulo 2)
