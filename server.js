@@ -15,6 +15,8 @@ const alertaRoutes = require("./routes/alertaRoutes");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+//HTTPS
+app.set("trust proxy", 1);
 // Middlewares
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
@@ -38,7 +40,7 @@ app.use("/", routes);
 module.exports = app;
 
 // Import the migration script
-const { runMigrations } = require('./database/migrate');
+const { runMigrations } = require("./database/migrate");
 
 // Start server after testing DB connection only if this file is run directly
 if (require.main === module) {
@@ -46,39 +48,46 @@ if (require.main === module) {
     try {
       // Try to listen on the specified port first
       const server = app.listen(PORT, () => {
-        console.log(`Server running on http://localhost:${server.address().port}`);
+        console.log(
+          `Server running on http://localhost:${server.address().port}`
+        );
       });
-      
+
       // Then try to run database migrations
       // Use setTimeout to allow server to fully start before attempting migrations
       setTimeout(async () => {
         try {
           // Add a delay to ensure database connection is ready
           // Railway services might need extra time to be fully available
-          console.log("Waiting for database to be ready before running migrations...");
-          await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+          console.log(
+            "Waiting for database to be ready before running migrations..."
+          );
+          await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait 5 seconds
           console.log("Attempting to run database migrations...");
           await runMigrations();
           console.log("Database migrations completed successfully");
         } catch (migrationError) {
           console.warn("Database migrations failed:", migrationError.message);
-          console.warn("Application will continue running but database may not be properly initialized");
+          console.warn(
+            "Application will continue running but database may not be properly initialized"
+          );
         }
       }, 2000); // Wait 2 seconds before starting the migration process
-      
+
       // Handle the case where the port is already in use
-      server.on('error', (err) => {
-        if (err.code === 'EADDRINUSE') {
+      server.on("error", (err) => {
+        if (err.code === "EADDRINUSE") {
           console.log(`Port ${PORT} is already in use. Trying another port...`);
           // Try a random available port
           server.listen(0, () => {
-            console.log(`Server running on http://localhost:${server.address().port}`);
+            console.log(
+              `Server running on http://localhost:${server.address().port}`
+            );
           });
         } else {
           throw err;
         }
       });
-      
     } catch (err) {
       console.error("Failed to start application:", err.message || err);
       process.exit(1);
