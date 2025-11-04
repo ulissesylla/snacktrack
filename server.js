@@ -50,13 +50,18 @@ if (require.main === module) {
       });
       
       // Then try to run database migrations
-      try {
-        await runMigrations();
-        console.log("Database migrations completed successfully");
-      } catch (migrationError) {
-        console.warn("Database migrations failed:", migrationError.message);
-        console.warn("Application will continue running but database may not be properly initialized");
-      }
+      // Use setTimeout to allow server to fully start before attempting migrations
+      setTimeout(async () => {
+        try {
+          // Add a small delay to ensure database connection is ready
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          await runMigrations();
+          console.log("Database migrations completed successfully");
+        } catch (migrationError) {
+          console.warn("Database migrations failed:", migrationError.message);
+          console.warn("Application will continue running but database may not be properly initialized");
+        }
+      }, 1000);
       
       // Handle the case where the port is already in use
       server.on('error', (err) => {
