@@ -1,4 +1,4 @@
-const db = require('../config/database');
+const db = require("../config/database");
 
 const schemaSQL = `
 -- Tabela de usuários (base para Módulo 1)
@@ -86,23 +86,25 @@ INSERT IGNORE INTO produtos (nome, descricao, preco, unidade_medida, categoria, 
 
 async function runMigrations() {
   try {
-    console.log('Starting database migration...');
+    console.log("Starting database migration...");
     await db.query(schemaSQL);
-    console.log('Database migration completed successfully!');
+    console.log("Database migration completed successfully!");
   } catch (error) {
-    console.error('Error during migration:', error.message);
+    console.error("Error during migration:", error.message);
     throw error;
   }
 }
 
 if (require.main === module) {
-  runMigrations().then(() => {
-    console.log('Migration script completed.');
-    process.exit(0);
-  }).catch((error) => {
-    console.error('Migration failed:', error);
-    process.exit(1);
-  });
+  runMigrations()
+    .then(() => {
+      console.log("Migration script completed.");
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error("Migration failed:", error);
+      process.exit(1);
+    });
 }
 
 module.exports = { runMigrations };

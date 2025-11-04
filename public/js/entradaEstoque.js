@@ -46,7 +46,7 @@ async function carregarProdutos() {
             console.error('Erro ao carregar produtos:', data);
             // Usar o sistema de notificações existente (igual produtos.js)
             if (typeof window.showBanner === 'function') {
-                window.showBanner('Erro ao carregar produtos: ' + (data.message || 'Erro desconhecido'));
+                window.showBanner('Erro ao carregar produtos: ' + (data.message || 'Erro desconhecido'), 'error');
             } else {
                 console.error('Erro ao carregar produtos: ' + (data.message || 'Erro desconhecido'));
             }
@@ -55,7 +55,7 @@ async function carregarProdutos() {
         console.error('Erro ao carregar produtos:', error);
         // Usar o sistema de notificações existente (igual produtos.js)
         if (typeof window.showBanner === 'function') {
-            window.showBanner('Erro de rede ao carregar produtos');
+            window.showBanner('Erro de rede ao carregar produtos', 'error');
         } else {
             console.error('Erro de rede ao carregar produtos');
         }
@@ -81,7 +81,7 @@ async function carregarLocais() {
             console.error('Erro ao carregar locais:', data);
             // Usar o sistema de notificações existente (igual produtos.js)
             if (typeof window.showBanner === 'function') {
-                window.showBanner('Erro ao carregar locais: ' + (data.message || 'Erro desconhecido'));
+                window.showBanner('Erro ao carregar locais: ' + (data.message || 'Erro desconhecido'), 'error');
             } else {
                 console.error('Erro ao carregar locais: ' + (data.message || 'Erro desconhecido'));
             }
@@ -90,7 +90,7 @@ async function carregarLocais() {
         console.error('Erro ao carregar locais:', error);
         // Usar o sistema de notificações existente (igual produtos.js)
         if (typeof window.showBanner === 'function') {
-            window.showBanner('Erro de rede ao carregar locais');
+            window.showBanner('Erro de rede ao carregar locais', 'error');
         } else {
             console.error('Erro de rede ao carregar locais');
         }
@@ -186,7 +186,7 @@ async function handleSubmit(event) {
         if (response.ok) {
             // Usar o sistema de notificações existente (igual produtos.js)
             if (typeof window.showBanner === 'function') {
-                window.showBanner('Entrada registrada com sucesso!');
+                window.showBanner('Entrada registrada com sucesso!', 'success');
             } else {
                 console.log('Entrada registrada com sucesso!');
             }
@@ -195,14 +195,14 @@ async function handleSubmit(event) {
             const errorMessage = result.message || result.error || 'Erro ao registrar entrada';
             // Usar o sistema de notificações existente (igual produtos.js)
             if (typeof window.showBanner === 'function') {
-                window.showBanner(errorMessage);
+                window.showBanner(errorMessage, 'error');
             } else {
                 console.error(errorMessage);
             }
         }
     } catch (error) {
         console.error('Erro ao registrar entrada:', error);
-        showBanner('Erro de rede ao registrar entrada');
+        showBanner('Erro de rede ao registrar entrada', 'error');
     } finally {
         // Desbloquear submissão
         submitLocked = false;

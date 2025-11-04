@@ -39,7 +39,7 @@ async function carregarEstatisticas() {
         } else {
             console.error('Erro ao carregar estatísticas:', data);
             if (typeof window.showBanner === 'function') {
-                window.showBanner('Erro ao carregar estatísticas: ' + (data.message || 'Erro desconhecido'));
+                window.showBanner('Erro ao carregar estatísticas: ' + (data.message || 'Erro desconhecido'), 'error');
             } else {
                 console.error('Erro ao carregar estatísticas: ' + (data.message || 'Erro desconhecido'));
             }
@@ -47,7 +47,7 @@ async function carregarEstatisticas() {
     } catch (error) {
         console.error('Erro ao carregar estatísticas:', error);
         if (typeof window.showBanner === 'function') {
-            window.showBanner('Erro de rede ao carregar estatísticas');
+            window.showBanner('Erro de rede ao carregar estatísticas', 'error');
         }
     }
 }
@@ -90,7 +90,7 @@ async function carregarEstoqueAtual() {
         } else {
             console.error('Erro ao carregar estoque atual:', data);
             if (typeof window.showBanner === 'function') {
-                window.showBanner('Erro ao carregar estoque atual: ' + (data.message || 'Erro desconhecido'));
+                window.showBanner('Erro ao carregar estoque atual: ' + (data.message || 'Erro desconhecido'), 'error');
             } else {
                 console.error('Erro ao carregar estoque atual: ' + (data.message || 'Erro desconhecido'));
             }
@@ -98,7 +98,7 @@ async function carregarEstoqueAtual() {
     } catch (error) {
         console.error('Erro ao carregar estoque atual:', error);
         if (typeof window.showBanner === 'function') {
-            window.showBanner('Erro de rede ao carregar estoque atual');
+            window.showBanner('Erro de rede ao carregar estoque atual', 'error');
         }
     }
 }
@@ -146,7 +146,7 @@ async function carregarUltimasMovimentacoes() {
         } else {
             console.error('Erro ao carregar últimas movimentações:', data);
             if (typeof window.showBanner === 'function') {
-                window.showBanner('Erro ao carregar últimas movimentações: ' + (data.message || 'Erro desconhecido'));
+                window.showBanner('Erro ao carregar últimas movimentações: ' + (data.message || 'Erro desconhecido'), 'error');
             } else {
                 console.error('Erro ao carregar últimas movimentações: ' + (data.message || 'Erro desconhecido'));
             }
@@ -154,7 +154,7 @@ async function carregarUltimasMovimentacoes() {
     } catch (error) {
         console.error('Erro ao carregar últimas movimentações:', error);
         if (typeof window.showBanner === 'function') {
-            window.showBanner('Erro de rede ao carregar últimas movimentações');
+            window.showBanner('Erro de rede ao carregar últimas movimentações', 'error');
         }
     }
 }
@@ -204,7 +204,7 @@ async function carregarContagemAlertas() {
         } else {
             console.error('Erro ao carregar contagem de alertas:', data);
             if (typeof window.showBanner === 'function') {
-                window.showBanner('Erro ao carregar contagem de alertas: ' + (data.message || 'Erro desconhecido'));
+                window.showBanner('Erro ao carregar contagem de alertas: ' + (data.message || 'Erro desconhecido'), 'error');
             } else {
                 console.error('Erro ao carregar contagem de alertas: ' + (data.message || 'Erro desconhecido'));
             }
@@ -212,7 +212,7 @@ async function carregarContagemAlertas() {
     } catch (error) {
         console.error('Erro ao carregar contagem de alertas:', error);
         if (typeof window.showBanner === 'function') {
-            window.showBanner('Erro de rede ao carregar contagem de alertas');
+            window.showBanner('Erro de rede ao carregar contagem de alertas', 'error');
         }
     }
 }

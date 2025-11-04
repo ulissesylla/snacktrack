@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               }
             }
             if (!local) {
-              showBanner("Local não encontrado");
+              showBanner("Local não encontrado", 'error');
               return;
             }
             const payload = {
@@ -63,11 +63,11 @@ document.addEventListener("DOMContentLoaded", async () => {
               await load();
             } else {
               const jerr = await res.json().catch(() => ({}));
-              showBanner(jerr.error || "Erro ao atualizar status");
+              showBanner(jerr.error || "Erro ao atualizar status", 'error');
             }
           } catch (err) {
             console.error("Erro ao atualizar status", err);
-            showBanner("Erro de rede");
+            showBanner("Erro de rede", 'error');
           } finally {
             setTimeout(() => {
               if (e && e.currentTarget) {
@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           const id = e.target.dataset.id;
           const local = j.locais.find((x) => String(x.id) === String(id));
           if (!local) {
-            showBanner("Local não encontrado");
+            showBanner("Local não encontrado", 'error');
             return;
           }
           editId = id;
@@ -191,12 +191,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         const j = await res.json().catch(() => ({}));
         showBanner(
           j.error ||
-            (editId ? "Erro ao atualizar local" : "Erro ao criar local")
+            (editId ? "Erro ao atualizar local" : "Erro ao criar local"), 'error'
         );
       }
     } catch (e) {
       console.error(e);
-      showBanner("Erro de rede");
+      showBanner("Erro de rede", 'error');
     }
     setTimeout(() => {
       submitLocked = false;

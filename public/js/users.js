@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           const id = e.target.dataset.id;
           const user = j.users.find((x) => String(x.id) === String(id));
           if (!user) {
-            showBanner("Usuário não encontrado");
+            showBanner("Usuário não encontrado", 'error');
             return;
           }
           // set edit mode
@@ -179,12 +179,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         const j = await res.json().catch(() => ({}));
         showBanner(
           j.error ||
-            (editId ? "Erro ao atualizar usuário" : "Erro ao criar usuário")
+            (editId ? "Erro ao atualizar usuário" : "Erro ao criar usuário"), 'error'
         );
       }
     } catch (e) {
       console.error(e);
-      showBanner("Erro de rede");
+      showBanner("Erro de rede", 'error');
     }
     // re-enable after 1.2s
     setTimeout(() => {

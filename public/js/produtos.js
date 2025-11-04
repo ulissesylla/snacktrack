@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         b.addEventListener("click", (e) => {
           const id = e.currentTarget.dataset.id;
           const prod = j.produtos.find((x) => String(x.id) === String(id));
-          if (!prod) return showBanner("Produto não encontrado");
+          if (!prod) return showBanner("Produto não encontrado", 'error');
           editId = id;
           document.getElementById("modalTitle").textContent = "Editar Produto";
           btnSubmit.textContent = "Salvar";
@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             e.currentTarget.disabled = true;
             // fetch product to build full payload (backend validation requires preco)
             const r = await fetch(`/api/produtos/${id}`);
-            if (!r.ok) return showBanner("Produto não encontrado");
+            if (!r.ok) return showBanner("Produto não encontrado", 'error');
             const data = await r.json();
             const prod = data.produto;
             const payload = {
@@ -88,11 +88,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (up.ok) await load();
             else {
               const jerr = await up.json().catch(() => ({}));
-              showBanner(jerr.error || "Erro ao atualizar produto");
+              showBanner(jerr.error || "Erro ao atualizar produto", 'error');
             }
           } catch (err) {
             console.error(err);
-            showBanner("Erro de rede");
+            showBanner("Erro de rede", 'error');
           } finally {
             setTimeout(() => {
               if (e && e.currentTarget) {
@@ -243,12 +243,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         const j = await res.json().catch(() => ({}));
         showBanner(
           j.error ||
-            (editId ? "Erro ao atualizar produto" : "Erro ao criar produto")
+            (editId ? "Erro ao atualizar produto" : "Erro ao criar produto"), 'error'
         );
       }
     } catch (err) {
       console.error(err);
-      showBanner("Erro de rede");
+      showBanner("Erro de rede", 'error');
     }
     setTimeout(() => {
       submitLocked = false;
