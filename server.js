@@ -37,6 +37,9 @@ app.use("/", routes);
 // Export the app instance for testing
 module.exports = app;
 
+// Import the migration script
+const { runMigrations } = require('./database/migrate');
+
 // Start server after testing DB connection only if this file is run directly
 if (require.main === module) {
   async function start() {
@@ -46,16 +49,13 @@ if (require.main === module) {
         console.log(`Server running on http://localhost:${server.address().port}`);
       });
       
-      // Then try to test the database connection
-      // Note: This connection test may fail if the database is not yet ready
-      // It's better to allow the app to start and handle database issues gracefully
+      // Then try to run database migrations
       try {
-        // quick test query (doesn't require any tables)
-        await db.query("SELECT 1");
-        console.log("Database connection successful");
-      } catch (dbError) {
-        console.warn("Database connection failed:", dbError.message);
-        console.warn("Application will continue running but may have limited functionality");
+        await runMigrations();
+        console.log("Database migrations completed successfully");
+      } catch (migrationError) {
+        console.warn("Database migrations failed:", migrationError.message);
+        console.warn("Application will continue running but database may not be properly initialized");
       }
       
       // Handle the case where the port is already in use
