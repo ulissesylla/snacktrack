@@ -7,32 +7,34 @@ class Database {
 
     // Check if running on Railway or in production environment
     if (process.env.RAILWAY_DEPLOYMENT_ID || process.env.NODE_ENV === 'production') {
-      // Use Railway's automatic environment variables
+      // Use Railway's actual environment variables
+      // Note: Railway uses different variable names than standard MySQL
       const {
-        MYSQL_HOST,
-        MYSQL_PORT,
-        MYSQL_USER,
-        MYSQL_PASSWORD,
-        MYSQL_DATABASE
+        MYSQLHOST,
+        MYSQLPORT,
+        MYSQLUSER,
+        MYSQLPASSWORD,
+        MYSQLDATABASE
       } = process.env;
 
       console.log("Running in production/Railway environment");
-      console.log("MYSQL_HOST:", MYSQL_HOST);
-      console.log("MYSQL_PORT:", MYSQL_PORT);
-      console.log("MYSQL_USER:", MYSQL_USER);
-      console.log("MYSQL_DATABASE:", MYSQL_DATABASE ? "SET" : "NOT SET");
+      console.log("MYSQLHOST:", MYSQLHOST);
+      console.log("MYSQLPORT:", MYSQLPORT);
+      console.log("MYSQLUSER:", MYSQLUSER);
+      console.log("MYSQLDATABASE:", MYSQLDATABASE ? "SET" : "NOT SET");
 
-      if (!MYSQL_HOST || !MYSQL_PORT || !MYSQL_USER || !MYSQL_PASSWORD || !MYSQL_DATABASE) {
+      if (!MYSQLHOST || !MYSQLPORT || !MYSQLUSER || !MYSQLPASSWORD || !MYSQLDATABASE) {
         console.error("Missing required environment variables for Railway database connection!");
+        console.error("Available env vars:", Object.keys(process.env).filter(key => key.includes('MYSQL') || key.includes('RAILWAY')));
         console.error("Ensure your Railway database is properly linked to your application.");
       }
 
       this.pool = mysql.createPool({
-        host: MYSQL_HOST,
-        user: MYSQL_USER,
-        password: MYSQL_PASSWORD,
-        database: MYSQL_DATABASE,
-        port: Number(MYSQL_PORT),
+        host: MYSQLHOST,
+        user: MYSQLUSER,
+        password: MYSQLPASSWORD,
+        database: MYSQLDATABASE,
+        port: Number(MYSQLPORT),
         waitForConnections: true,
         connectionLimit: 10,
         queueLimit: 0,

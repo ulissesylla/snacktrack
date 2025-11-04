@@ -53,15 +53,18 @@ if (require.main === module) {
       // Use setTimeout to allow server to fully start before attempting migrations
       setTimeout(async () => {
         try {
-          // Add a small delay to ensure database connection is ready
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          // Add a delay to ensure database connection is ready
+          // Railway services might need extra time to be fully available
+          console.log("Waiting for database to be ready before running migrations...");
+          await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+          console.log("Attempting to run database migrations...");
           await runMigrations();
           console.log("Database migrations completed successfully");
         } catch (migrationError) {
           console.warn("Database migrations failed:", migrationError.message);
           console.warn("Application will continue running but database may not be properly initialized");
         }
-      }, 1000);
+      }, 2000); // Wait 2 seconds before starting the migration process
       
       // Handle the case where the port is already in use
       server.on('error', (err) => {
