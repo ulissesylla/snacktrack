@@ -59,28 +59,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           usersLink.textContent = "Usuários";
           usersLink.style.marginLeft = "8px";
           navRight.appendChild(usersLink);
-          const locaisLink = document.createElement("a");
-          locaisLink.href = "/locais.html";
-          locaisLink.textContent = "Locais";
-          locaisLink.style.marginLeft = "8px";
-          navRight.appendChild(locaisLink);
-          const produtosLink = document.createElement("a");
-          produtosLink.href = "/produtos.html";
-          produtosLink.textContent = "Produtos";
-          produtosLink.style.marginLeft = "8px";
-          navRight.appendChild(produtosLink);
-        } else {
-          // non-managers get Locais and Produtos links
-          const locaisLink = document.createElement("a");
-          locaisLink.href = "/locais.html";
-          locaisLink.textContent = "Locais";
-          locaisLink.style.marginLeft = "8px";
-          navRight.appendChild(locaisLink);
-          const produtosLink = document.createElement("a");
-          produtosLink.href = "/produtos.html";
-          produtosLink.textContent = "Produtos";
-          produtosLink.style.marginLeft = "8px";
-          navRight.appendChild(produtosLink);
         }
 
         const logoutBtn = document.createElement("a");
