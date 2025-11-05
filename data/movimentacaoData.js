@@ -5,22 +5,76 @@ const db = require("../config/database");
  * movimentacao: { tipo, produto_id, local_origem_id, local_destino_id, quantidade, usuario_id }
  */
 async function create(movimentacao, connection = null) {
-  const sql = `INSERT INTO movimentacoes (tipo, produto_id, local_origem_id, local_destino_id, quantidade, usuario_id, data_movimentacao) VALUES (?, ?, ?, ?, ?, ?, NOW())`;
-  const params = [
-    movimentacao.tipo,
-    movimentacao.produto_id,
-    movimentacao.local_origem_id || null,
-    movimentacao.local_destino_id || null,
-    movimentacao.quantidade,
-    movimentacao.usuario_id || null,
-  ];
-  const res = await db.query(sql, params, connection);
-  const insertId = res.insertId || (res && res.affectedRows ? res.insertId : undefined);
-  if (insertId) {
-    const rows = await db.query("SELECT * FROM movimentacoes WHERE id = ? LIMIT 1", [insertId], connection);
-    return rows[0] || null;
+  // Use transaction if no connection provided
+  const useTransaction = !connection;
+  let conn = connection;
+
+  try {
+    if (useTransaction) {
+      conn = await db.getConnection();
+      await conn.beginTransaction();
+    }
+
+    // Insert the movement record
+    const sql = `INSERT INTO movimentacoes (tipo, produto_id, local_origem_id, local_destino_id, quantidade, usuario_id, data_movimentacao) VALUES (?, ?, ?, ?, ?, ?, NOW())`;
+    const params = [
+      movimentacao.tipo,
+      movimentacao.produto_id,
+      movimentacao.local_origem_id || null,
+      movimentacao.local_destino_id || null,
+      movimentacao.quantidade,
+      movimentacao.usuario_id || null,
+    ];
+    const res = await db.query(sql, params, conn);
+    const insertId = res.insertId || (res && res.affectedRows ? res.insertId : undefined);
+    
+    if (insertId) {
+      // Update the product's overall estoque_atual based on the movement type
+      // The estoque_atual in produtos table represents the total stock across all locations for that product
+      if (movimentacao.tipo === 'Entrada') {
+        // For entries, we increase overall product stock
+        const updateSql = `
+          UPDATE produtos 
+          SET estoque_atual = estoque_atual + ?
+          WHERE id = ?
+        `;
+        await db.query(updateSql, [movimentacao.quantidade, movimentacao.produto_id], conn);
+      } else if (movimentacao.tipo === 'Saída') {
+        // For exits, we decrease overall product stock
+        const updateSql = `
+          UPDATE produtos 
+          SET estoque_atual = estoque_atual - ?
+          WHERE id = ?
+        `;
+        await db.query(updateSql, [movimentacao.quantidade, movimentacao.produto_id], conn);
+      } else if (movimentacao.tipo === 'Transferência') {
+        // For transfers, the overall product stock remains the same
+        // The stock just moves between locations, so no change to the product's estoque_atual
+      }
+
+      const rows = await db.query("SELECT * FROM movimentacoes WHERE id = ? LIMIT 1", [insertId], conn);
+      
+      if (useTransaction) {
+        await conn.commit();
+      }
+      
+      return rows[0] || null;
+    }
+    
+    if (useTransaction) {
+      await conn.commit();
+    }
+    return null;
+  } catch (error) {
+    if (useTransaction && conn) {
+      await conn.rollback();
+    }
+    throw error;
+  } finally {
+    if (useTransaction && conn) {
+      conn.release();
+    }
   }
-  return null;
 }
 
 /**
