@@ -26,7 +26,23 @@ document.addEventListener('DOMContentLoaded', async function() {
     const localSelect = document.getElementById('localId');
     const quantidadeInput = document.getElementById('quantidade');
     
-    produtoSelect.addEventListener('change', atualizarEstoqueDisponivel);
+    produtoSelect.addEventListener('change', async function() {
+        // Limpar local selecionado quando produto mudar
+        localSelect.value = '';
+        
+        // Atualizar a lista de locais para mostrar apenas aqueles com estoque do produto
+        const produtoId = produtoSelect.value;
+        if (produtoId) {
+            await carregarLocaisComEstoque(produtoId);
+        } else {
+            // Se nenhum produto selecionado, carregar todos os locais ativos
+            await carregarLocais();
+        }
+        
+        // Atualizar estoque disponível
+        atualizarEstoqueDisponivel();
+    });
+    
     localSelect.addEventListener('change', atualizarEstoqueDisponivel);
     quantidadeInput.addEventListener('input', validarQuantidadeEmTempoReal);
 });
@@ -79,6 +95,59 @@ async function carregarLocais() {
     }
 }
 
+// Função para carregar locais que têm estoque do produto selecionado
+async function carregarLocaisComEstoque(produtoId) {
+    try {
+        // Obter todos os locais primeiro
+        const locaisResponse = await fetch('/api/locais');
+        const locaisData = await locaisResponse.json();
+        
+        if (!locaisResponse.ok) {
+            console.error('Erro ao carregar locais:', locaisData);
+            showBanner('Erro ao carregar locais: ' + (locaisData.message || 'Erro desconhecido'), 'error');
+            await carregarLocais(); // Fallback to default behavior
+            return;
+        }
+        
+        // Filtrar apenas locais ativos
+        const locaisAtivos = Array.isArray(locaisData) ? locaisData : 
+                           (locaisData.locais ? locaisData.locais : []);
+        
+        // Para cada local ativo, verificar o estoque do produto
+        const locaisComEstoque = [];
+        
+        for (const local of locaisAtivos) {
+            if (local.status === 'Ativo') {
+                // Obter estoque específico para este produto-neste-local
+                const estoqueResponse = await fetch(`/api/movimentacoes/estoque?produto_id=${produtoId}&local_id=${local.id}`);
+                const estoqueData = await estoqueResponse.json();
+                
+                if (estoqueResponse.ok && estoqueData.estoque_atual > 0) {
+                    // Adicionar local com estoque info
+                    locaisComEstoque.push({
+                        id: local.id,
+                        nome: local.nome,
+                        estoque_atual: estoqueData.estoque_atual
+                    });
+                }
+            }
+        }
+        
+        if (locaisComEstoque.length > 0) {
+            preencherSelectLocais(locaisComEstoque);
+        } else {
+            // Se nenhum local tiver estoque, mostrar mensagem e limpar opções
+            document.getElementById('localId').innerHTML = '<option value="">Nenhum local com estoque</option>';
+            showBanner('Nenhum local com estoque disponível para este produto', 'warning');
+        }
+    } catch (error) {
+        console.error('Erro ao carregar locais com estoque:', error);
+        showBanner('Erro de rede ao carregar locais com estoque', 'error');
+        // Em caso de erro de rede, carregar todos os locais ativos
+        await carregarLocais();
+    }
+}
+
 // Função para preencher o select de produtos
 function preencherSelectProdutos(produtos) {
     const select = document.getElementById('produtoId');
@@ -113,10 +182,14 @@ function preencherSelectLocais(locais) {
     
     if (locais && Array.isArray(locais)) {
         locais.forEach(local => {
-            if (local.status === 'Ativo') { // Apenas locais ativos
+            // Se o parâmetro for um objeto completo de local (com id e nome), usamos esse formato
+            // Se o parâmetro for um objeto com id, nome e estoque_atual (do estoque endpoint), também suportamos
+            const id = local.id || local.local_id;
+            const nome = local.nome || local.local_nome;
+            if (nome) { // Apenas locais com nome válido
                 const option = document.createElement('option');
-                option.value = local.id;
-                option.textContent = local.nome;
+                option.value = id;
+                option.textContent = nome;
                 select.appendChild(option);
             }
         });
