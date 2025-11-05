@@ -33,6 +33,7 @@ CREATE TABLE produtos (
     unidade_medida VARCHAR(20) DEFAULT 'unidade',
     categoria VARCHAR(50),
     estoque_minimo DECIMAL(10,2) DEFAULT 0,
+    estoque_atual DECIMAL(10,2) DEFAULT 0,
     fabricante VARCHAR(100),
     tipo ENUM('Matéria-prima', 'Produto semiacabado', 'Produto acabado') DEFAULT 'Matéria-prima',
     data_validade DATE NULL,
