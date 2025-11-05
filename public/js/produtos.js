@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           p.tipo || ""
         }</td><td>${
           p.preco != null ? Number(p.preco).toFixed(2) : ""
-        }</td><td>${p.estoque_minimo ?? ""}</td><td>${p.status}</td><td>${
+        }</td><td>${p.estoque_minimo ?? ""}</td><td>${p.estoque_atual ?? ""}</td><td>${p.status}</td><td>${
           isManager
             ? `<button data-id="${p.id}" class="btn-edit">Editar</button> <button data-id="${p.id}" class="btn-toggle">${toggleLabel}</button>`
             : ""
@@ -104,7 +104,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       );
     } else {
       tbody.innerHTML =
-        '<tr><td colspan="7">Erro ao carregar produtos</td></tr>';
+        '<tr><td colspan="8">Erro ao carregar produtos</td></tr>';
     }
   };
 
