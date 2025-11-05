@@ -10,6 +10,10 @@ function validateInput(payload = {}, { isUpdate = false } = {}) {
     if (!payload.nome || String(payload.nome).trim().length < 2)
       errors.push("nome é obrigatório e deve ter ao menos 2 caracteres");
   }
+  // Prevent estoque_atual from being set manually as it's a calculated field
+  if (typeof payload.estoque_atual !== "undefined") {
+    errors.push("estoque_atual não pode ser definido manualmente");
+  }
   // preco: obrigatório no create, opcional no update. Quando presente deve ser positivo
   if (!isUpdate) {
     if (

@@ -21,8 +21,8 @@ function normalizeDate(val) {
 
 async function findAll({ onlyAvailable = true } = {}) {
   const sql = onlyAvailable
-    ? "SELECT id, nome, descricao, preco, unidade_medida, categoria, estoque_minimo, fabricante, tipo, data_validade, status, data_criacao FROM produtos WHERE status = ? ORDER BY id DESC"
-    : "SELECT id, nome, descricao, preco, unidade_medida, categoria, estoque_minimo, fabricante, tipo, data_validade, status, data_criacao FROM produtos ORDER BY id DESC";
+    ? "SELECT id, nome, descricao, preco, unidade_medida, categoria, estoque_minimo, estoque_atual, fabricante, tipo, data_validade, status, data_criacao FROM produtos WHERE status = ? ORDER BY id DESC"
+    : "SELECT id, nome, descricao, preco, unidade_medida, categoria, estoque_minimo, estoque_atual, fabricante, tipo, data_validade, status, data_criacao FROM produtos ORDER BY id DESC";
   const params = onlyAvailable ? ["Disponível"] : [];
   const rows = await db.query(sql, params);
   return rows;
@@ -30,7 +30,7 @@ async function findAll({ onlyAvailable = true } = {}) {
 
 async function findById(id) {
   const sql =
-    "SELECT id, nome, descricao, preco, unidade_medida, categoria, estoque_minimo, fabricante, tipo, data_validade, status, data_criacao FROM produtos WHERE id = ? LIMIT 1";
+    "SELECT id, nome, descricao, preco, unidade_medida, categoria, estoque_minimo, estoque_atual, fabricante, tipo, data_validade, status, data_criacao FROM produtos WHERE id = ? LIMIT 1";
   const rows = await db.query(sql, [id]);
   return rows[0] || null;
 }
@@ -38,8 +38,8 @@ async function findById(id) {
 async function create(payload) {
   // allow optional status on create; default DB will handle if not provided
   const sql = payload.status
-    ? "INSERT INTO produtos (nome, descricao, preco, unidade_medida, categoria, estoque_minimo, fabricante, tipo, data_validade, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-    : "INSERT INTO produtos (nome, descricao, preco, unidade_medida, categoria, estoque_minimo, fabricante, tipo, data_validade) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    ? "INSERT INTO produtos (nome, descricao, preco, unidade_medida, categoria, estoque_minimo, estoque_atual, fabricante, tipo, data_validade, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    : "INSERT INTO produtos (nome, descricao, preco, unidade_medida, categoria, estoque_minimo, estoque_atual, fabricante, tipo, data_validade) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
   const safeDate = normalizeDate(payload.data_validade);
   const params = payload.status
     ? [
@@ -49,6 +49,7 @@ async function create(payload) {
         payload.unidade_medida || "unidade",
         payload.categoria || null,
         payload.estoque_minimo || 0,
+        payload.estoque_atual || 0,
         payload.fabricante || null,
         payload.tipo || "Matéria-prima",
         safeDate,
@@ -61,6 +62,7 @@ async function create(payload) {
         payload.unidade_medida || "unidade",
         payload.categoria || null,
         payload.estoque_minimo || 0,
+        payload.estoque_atual || 0,
         payload.fabricante || null,
         payload.tipo || "Matéria-prima",
         safeDate,
@@ -70,7 +72,7 @@ async function create(payload) {
     res.insertId || (res && res.affectedRows ? res.insertId : undefined);
   if (insertId) return findById(insertId);
   const rows = await db.query(
-    "SELECT * FROM produtos WHERE nome = ? ORDER BY id DESC LIMIT 1",
+    "SELECT id, nome, descricao, preco, unidade_medida, categoria, estoque_minimo, estoque_atual, fabricante, tipo, data_validade, status, data_criacao FROM produtos WHERE nome = ? ORDER BY id DESC LIMIT 1",
     [payload.nome]
   );
   return rows[0] || null;
@@ -86,6 +88,7 @@ async function update(id, payload) {
     "unidade_medida",
     "categoria",
     "estoque_minimo",
+    "estoque_atual",
     "fabricante",
     "tipo",
     "data_validade",
