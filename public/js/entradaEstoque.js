@@ -13,6 +13,20 @@ document.addEventListener('DOMContentLoaded', async function() {
         return;
     }
 
+    // Adicionar campo de seleção de lote após o campo de quantidade
+    const quantidadeDiv = document.querySelector('#quantidade').closest('.form-group');
+    const lotesContainer = document.createElement('div');
+    lotesContainer.className = 'form-group';
+    lotesContainer.innerHTML = `
+      <label for="loteId">Lote</label>
+      <select class="form-control" id="loteId" name="lote_id">
+        <option value="">Criar novo lote ou adicionar a existente</option>
+        <!-- Preenchido via JavaScript -->
+      </select>
+      <div class="error-message" id="loteError"></div>
+    `;
+    quantidadeDiv.parentNode.insertBefore(lotesContainer, quantidadeDiv.nextSibling);
+    
     // Carregar dados iniciais
     carregarProdutos();
     carregarLocais();
@@ -20,6 +34,17 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Configurar o formulário
     const form = document.getElementById('formEntrada');
     form.addEventListener('submit', handleSubmit);
+    
+    // Adicionar evento para quando o produto for alterado para carregar lotes
+    document.getElementById('produtoId').addEventListener('change', function() {
+        const produtoId = this.value;
+        if (produtoId) {
+            carregarLotesPorProduto(produtoId);
+        } else {
+            const loteSelect = document.getElementById('loteId');
+            loteSelect.innerHTML = '<option value="">Criar novo lote ou adicionar a existente</option>';
+        }
+    });
 });
 
 // Variáveis para controle do formulário
@@ -141,6 +166,33 @@ function preencherSelectLocais(locais) {
     }
 }
 
+// Função para carregar lotes do produto selecionado
+async function carregarLotesPorProduto(produtoId) {
+    try {
+        const response = await fetch(`/api/lotes/produto/${produtoId}`);
+        if (response.ok) {
+            const data = await response.json();
+            const lotes = data.lotes || [];
+            
+            const loteSelect = document.getElementById('loteId');
+            loteSelect.innerHTML = '<option value="">Criar novo lote ou adicionar a existente</option>';
+            
+            lotes.forEach(lote => {
+                const option = document.createElement('option');
+                option.value = lote.id;
+                // Mostrar número do lote com data de validade
+                const validade = lote.data_validade ? ` - Vence: ${new Date(lote.data_validade).toLocaleDateString('pt-BR')}` : '';
+                option.textContent = `${lote.numero_lote} (Qtde: ${lote.quantidade})${validade}`;
+                loteSelect.appendChild(option);
+            });
+        } else {
+            console.error('Erro ao carregar lotes:', response.status);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar lotes:', error);
+    }
+}
+
 // Função para lidar com o envio do formulário
 async function handleSubmit(event) {
     event.preventDefault();
@@ -152,7 +204,8 @@ async function handleSubmit(event) {
     const formData = {
         produto_id: parseInt(document.getElementById('produtoId').value) || null,
         local_id: parseInt(document.getElementById('localId').value) || null,
-        quantidade: parseFloat(document.getElementById('quantidade').value) || null
+        quantidade: parseFloat(document.getElementById('quantidade').value) || null,
+        lote_id: document.getElementById('loteId').value || null
     };
 
     // Validar formulário
@@ -191,6 +244,12 @@ async function handleSubmit(event) {
                 console.log('Entrada registrada com sucesso!');
             }
             limparFormulario();
+            
+            // Limpar o campo de lotes também
+            const loteSelect = document.getElementById('loteId');
+            if (loteSelect) {
+                loteSelect.innerHTML = '<option value="">Criar novo lote ou adicionar a existente</option>';
+            }
         } else {
             const errorMessage = result.message || result.error || 'Erro ao registrar entrada';
             // Usar o sistema de notificações existente (igual produtos.js)
@@ -228,6 +287,8 @@ function validarFormulario(dados) {
         erros.push({ campo: 'quantidade', mensagem: 'Quantidade deve ser positiva' });
     }
     
+    // Não precisamos validar o lote_id, pois é opcional (pode criar novo lote)
+    
     return erros;
 }
 
@@ -255,7 +316,7 @@ function mostrarErros(erros) {
 // Função para limpar erros de validação
 function limparErros() {
     // Remover classes de erro e mensagens
-    const campos = ['produtoId', 'localId', 'quantidade'];
+    const campos = ['produtoId', 'localId', 'quantidade', 'loteId'];
     
     campos.forEach(campo => {
         const input = document.getElementById(campo);

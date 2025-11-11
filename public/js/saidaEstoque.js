@@ -13,6 +13,20 @@ document.addEventListener('DOMContentLoaded', async function() {
         return;
     }
 
+    // Adicionar campo de seleção de lote após o campo de quantidade
+    const quantidadeDiv = document.querySelector('#quantidade').closest('.form-group');
+    const lotesContainer = document.createElement('div');
+    lotesContainer.className = 'form-group';
+    lotesContainer.innerHTML = `
+      <label for="loteId">Lote (Opcional)</label>
+      <select class="form-control" id="loteId" name="lote_id">
+        <option value="">Não especificar lote (FIFO)</option>
+        <!-- Preenchido via JavaScript -->
+      </select>
+      <div class="error-message" id="loteError"></div>
+    `;
+    quantidadeDiv.parentNode.insertBefore(lotesContainer, quantidadeDiv.nextSibling);
+    
     // Carregar dados iniciais
     carregarProdutos();
     carregarLocais();
@@ -27,8 +41,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     const quantidadeInput = document.getElementById('quantidade');
     
     produtoSelect.addEventListener('change', async function() {
-        // Limpar local selecionado quando produto mudar
+        // Limpar local e lote selecionados quando produto mudar
         localSelect.value = '';
+        const loteSelect = document.getElementById('loteId');
+        loteSelect.innerHTML = '<option value="">Não especificar lote (FIFO)</option>';
         
         // Atualizar a lista de locais para mostrar apenas aqueles com estoque do produto
         const produtoId = produtoSelect.value;
@@ -43,7 +59,18 @@ document.addEventListener('DOMContentLoaded', async function() {
         atualizarEstoqueDisponivel();
     });
     
-    localSelect.addEventListener('change', atualizarEstoqueDisponivel);
+    localSelect.addEventListener('change', async function() {
+        // Atualizar os lotes disponíveis quando o local mudar
+        await atualizarEstoqueDisponivel();
+        const produtoId = document.getElementById('produtoId').value;
+        const localId = document.getElementById('localId').value;
+        if (produtoId && localId) {
+            await carregarLotesPorProdutoLocal(produtoId, localId);
+        } else {
+            const loteSelect = document.getElementById('loteId');
+            loteSelect.innerHTML = '<option value="">Não especificar lote (FIFO)</option>';
+        }
+    });
     quantidadeInput.addEventListener('input', validarQuantidadeEmTempoReal);
 });
 
@@ -145,6 +172,49 @@ async function carregarLocaisComEstoque(produtoId) {
         showBanner('Erro de rede ao carregar locais com estoque', 'error');
         // Em caso de erro de rede, carregar todos os locais ativos
         await carregarLocais();
+    }
+}
+
+// Função para carregar lotes do produto no local selecionado
+async function carregarLotesPorProdutoLocal(produtoId, localId) {
+    try {
+        // Primeiro obter todos os lotes do produto
+        const response = await fetch(`/api/lotes/produto/${produtoId}`);
+        if (response.ok) {
+            const data = await response.json();
+            const lotes = data.lotes || [];
+            
+            // Agora filtrar apenas os lotes que estão no local selecionado e têm estoque
+            const lotesFiltrados = [];
+            
+            for (const lote of lotes) {
+                // Verificar estoque específico para este lote
+                const estoqueResponse = await fetch(`/api/movimentacoes/estoque?produto_id=${produtoId}&local_id=${localId}`);
+                const estoqueData = await estoqueResponse.json();
+                
+                // Note: Atualmente não temos uma API que retorna estoque por lote e local
+                // Por enquanto, mostraremos todos os lotes do produto no local
+                if (estoqueData.estoque_atual > 0) {
+                    lotesFiltrados.push(lote);
+                }
+            }
+            
+            const loteSelect = document.getElementById('loteId');
+            loteSelect.innerHTML = '<option value="">Não especificar lote (FIFO)</option>';
+            
+            lotesFiltrados.forEach(lote => {
+                const option = document.createElement('option');
+                option.value = lote.id;
+                // Mostrar número do lote com data de validade
+                const validade = lote.data_validade ? ` - Vence: ${new Date(lote.data_validade).toLocaleDateString('pt-BR')}` : '';
+                option.textContent = `${lote.numero_lote} (Qtde: ${lote.quantidade})${validade}`;
+                loteSelect.appendChild(option);
+            });
+        } else {
+            console.error('Erro ao carregar lotes:', response.status);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar lotes:', error);
     }
 }
 
@@ -313,7 +383,8 @@ async function handleSubmit(event) {
     const formData = {
         produto_id: parseInt(document.getElementById('produtoId').value) || null,
         local_id: parseInt(document.getElementById('localId').value) || null,
-        quantidade: parseFloat(document.getElementById('quantidade').value) || null
+        quantidade: parseFloat(document.getElementById('quantidade').value) || null,
+        lote_id: document.getElementById('loteId').value || null
     };
 
     // Validar formulário
@@ -349,6 +420,12 @@ async function handleSubmit(event) {
             limparFormulario();
             // Atualizar o estoque exibido após a saída
             await atualizarEstoqueDisponivel();
+            
+            // Limpar o campo de lotes também
+            const loteSelect = document.getElementById('loteId');
+            if (loteSelect) {
+                loteSelect.innerHTML = '<option value="">Não especificar lote (FIFO)</option>';
+            }
         } else {
             const errorMessage = result.message || result.error || 'Erro ao registrar saída';
             showBanner(errorMessage, 'error');
@@ -410,7 +487,7 @@ function mostrarErros(erros) {
 // Função para limpar erros de validação
 function limparErros() {
     // Remover classes de erro e mensagens
-    const campos = ['produtoId', 'localId', 'quantidade'];
+    const campos = ['produtoId', 'localId', 'quantidade', 'loteId'];
     
     campos.forEach(campo => {
         const input = document.getElementById(campo);

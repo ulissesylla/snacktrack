@@ -13,6 +13,20 @@ document.addEventListener("DOMContentLoaded", async function () {
     return;
   }
 
+  // Adicionar campo de seleção de lote após o campo de quantidade
+  const quantidadeDiv = document.querySelector('#quantidade').closest('.form-group');
+  const lotesContainer = document.createElement('div');
+  lotesContainer.className = 'form-group';
+  lotesContainer.innerHTML = `
+    <label for="loteId">Lote (Opcional)</label>
+    <select class="form-control" id="loteId" name="lote_id">
+      <option value="">Não especificar lote (FIFO)</option>
+      <!-- Preenchido via JavaScript -->
+    </select>
+    <div class="error-message" id="loteError"></div>
+  `;
+  quantidadeDiv.parentNode.insertBefore(lotesContainer, quantidadeDiv.nextSibling);
+
   // Carregar dados iniciais
   carregarProdutos();
   carregarLocais();
@@ -28,9 +42,11 @@ document.addEventListener("DOMContentLoaded", async function () {
   const quantidadeInput = document.getElementById("quantidade");
 
   produtoSelect.addEventListener("change", async function () {
-    // Limpar locais selecionados quando produto mudar
+    // Limpar locais e lote selecionados quando produto mudar
     localOrigemSelect.value = "";
     localDestinoSelect.value = "";
+    const loteSelect = document.getElementById("loteId");
+    loteSelect.innerHTML = '<option value="">Não especificar lote (FIFO)</option>';
 
     // Atualizar a lista de locais de origem para mostrar apenas aqueles com estoque do produto
     const produtoId = produtoSelect.value;
@@ -49,6 +65,16 @@ document.addEventListener("DOMContentLoaded", async function () {
     atualizarEstoqueDisponivel();
     // Atualizar o select de destino para excluir o local de origem
     await atualizarSelectDestino();
+    
+    // Atualizar os lotes disponíveis quando o local de origem mudar
+    const produtoId = document.getElementById("produtoId").value;
+    const localOrigemId = document.getElementById("localOrigemId").value;
+    if (produtoId && localOrigemId) {
+      await carregarLotesPorProdutoLocal(produtoId, localOrigemId);
+    } else {
+      const loteSelect = document.getElementById("loteId");
+      loteSelect.innerHTML = '<option value="">Não especificar lote (FIFO)</option>';
+    }
   });
 
   localDestinoSelect.addEventListener("change", validarLocaisDiferentes);
@@ -492,6 +518,7 @@ async function handleSubmit(event) {
     local_destino_id:
       parseInt(document.getElementById("localDestinoId").value) || null,
     quantidade: parseFloat(document.getElementById("quantidade").value) || null,
+    lote_id: document.getElementById('loteId').value || null
   };
 
   // Validar formulário
@@ -527,6 +554,12 @@ async function handleSubmit(event) {
       limparFormulario();
       // Atualizar o estoque exibido após a transferência
       await atualizarEstoqueDisponivel();
+      
+      // Limpar o campo de lotes também
+      const loteSelect = document.getElementById('loteId');
+      if (loteSelect) {
+        loteSelect.innerHTML = '<option value="">Não especificar lote (FIFO)</option>';
+      }
     } else {
       const errorMessage =
         result.message || result.error || "Erro ao registrar transferência";
@@ -616,7 +649,7 @@ function mostrarErros(erros) {
 // Função para limpar erros de validação
 function limparErros() {
   // Remover classes de erro e mensagens
-  const campos = ["produtoId", "localOrigemId", "localDestinoId", "quantidade"];
+  const campos = ["produtoId", "localOrigemId", "localDestinoId", "quantidade", "loteId"];
 
   campos.forEach((campo) => {
     const input = document.getElementById(campo);
@@ -631,6 +664,49 @@ function limparErros() {
       mensagem.textContent = "";
     }
   });
+}
+
+// Função para carregar lotes do produto no local de origem
+async function carregarLotesPorProdutoLocal(produtoId, localId) {
+  try {
+    // Primeiro obter todos os lotes do produto
+    const response = await fetch(`/api/lotes/produto/${produtoId}`);
+    if (response.ok) {
+      const data = await response.json();
+      const lotes = data.lotes || [];
+      
+      // Agora filtrar apenas os lotes que estão no local selecionado e têm estoque
+      const lotesFiltrados = [];
+      
+      for (const lote of lotes) {
+        // Verificar estoque específico para este lote
+        const estoqueResponse = await fetch(`/api/movimentacoes/estoque?produto_id=${produtoId}&local_id=${localId}`);
+        const estoqueData = await estoqueResponse.json();
+        
+        // Note: Atualmente não temos uma API que retorna estoque por lote e local
+        // Por enquanto, mostraremos todos os lotes do produto no local
+        if (estoqueData.estoque_atual > 0) {
+          lotesFiltrados.push(lote);
+        }
+      }
+      
+      const loteSelect = document.getElementById('loteId');
+      loteSelect.innerHTML = '<option value="">Não especificar lote (FIFO)</option>';
+      
+      lotesFiltrados.forEach(lote => {
+        const option = document.createElement('option');
+        option.value = lote.id;
+        // Mostrar número do lote com data de validade
+        const validade = lote.data_validade ? ` - Vence: ${new Date(lote.data_validade).toLocaleDateString('pt-BR')}` : '';
+        option.textContent = `${lote.numero_lote} (Qtde: ${lote.quantidade})${validade}`;
+        loteSelect.appendChild(option);
+      });
+    } else {
+      console.error('Erro ao carregar lotes:', response.status);
+    }
+  } catch (error) {
+    console.error('Erro ao carregar lotes:', error);
+  }
 }
 
 // Função para limpar o formulário
@@ -651,6 +727,12 @@ function limparFormulario() {
     "estoque-baixo",
     "estoque-acima"
   );
+  
+  // Limpar o campo de lotes também
+  const loteSelect = document.getElementById('loteId');
+  if (loteSelect) {
+    loteSelect.innerHTML = '<option value="">Não especificar lote (FIFO)</option>';
+  }
 
   // Reabilitar botão se os problemas forem corrigidos
   const btnSubmit = document.getElementById("btnSubmit");

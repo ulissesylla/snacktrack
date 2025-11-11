@@ -11,7 +11,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       <div class="brand">SnackTrack</div>
       <nav class="nav-links" id="mainNav">
         <a href="/">Início</a>
-        <a href="/produtos.html">Produtos</a>
+        <!-- Menu Dropdown de Produtos -->
+        <div class="dropdown">
+          <a href="#" class="dropdown-toggle">Produtos</a>
+          <ul class="dropdown-menu">
+            <li><a href="/produtos.html">Gerenciar Produtos</a></li>
+            <li><a href="/lotes.html">Gerenciar Lotes</a></li>
+          </ul>
+        </div>
         <a href="/locais.html">Locais</a>
         <!-- Menu Dropdown de Movimentações -->
         <div class="dropdown">
