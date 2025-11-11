@@ -47,9 +47,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             prod.estoque_minimo ?? "";
           document.getElementById("fabricante").value = prod.fabricante || "";
           document.getElementById("tipo").value = prod.tipo || "Matéria-prima";
-          document.getElementById("data_validade").value = prod.data_validade
-            ? prod.data_validade.split("T")[0]
-            : "";
+
           document.getElementById("status").value = prod.status || "Disponível";
           clearErrors();
           setOpen(true);
@@ -77,7 +75,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               estoque_minimo: prod.estoque_minimo,
               fabricante: prod.fabricante,
               tipo: prod.tipo,
-              data_validade: prod.data_validade,
+
               status: newStatus,
             };
             const up = await fetch(`/api/produtos/${id}`, {
@@ -144,7 +142,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       "estoque_minimo",
       "fabricante",
       "tipo",
-      "data_validade",
+
       "status",
     ].forEach((k) => {
       const el = document.getElementById("err-" + k);
@@ -183,21 +181,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         ok = false;
       }
     }
-    if (data.data_validade) {
-      const d = new Date(data.data_validade);
-      if (isNaN(d.getTime())) {
-        document.getElementById("err-data_validade").textContent =
-          "Data inválida";
-        ok = false;
-      } else {
-        const today = new Date(new Date().toDateString());
-        if (d < today) {
-          document.getElementById("err-data_validade").textContent =
-            "Data deve ser hoje ou no futuro";
-          ok = false;
-        }
-      }
-    }
+
     return ok;
   };
 
@@ -214,7 +198,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       estoque_minimo: document.getElementById("estoque_minimo").value,
       fabricante: document.getElementById("fabricante").value.trim(),
       tipo: document.getElementById("tipo").value,
-      data_validade: document.getElementById("data_validade").value || null,
+
       status: document.getElementById("status").value,
     };
     if (!validate(data)) return;

@@ -55,20 +55,7 @@ function validateInput(payload = {}, { isUpdate = false } = {}) {
   if (typeof payload.tipo !== "undefined" && payload.tipo !== null) {
     if (!TIPOS.includes(payload.tipo)) errors.push("tipo inválido");
   }
-  if (
-    typeof payload.data_validade !== "undefined" &&
-    payload.data_validade !== null &&
-    payload.data_validade !== ""
-  ) {
-    const d = new Date(payload.data_validade);
-    if (isNaN(d.getTime())) errors.push("data_validade inválida");
-    else {
-      const now = new Date();
-      // allow today or future
-      if (d < new Date(now.toDateString()))
-        errors.push("data_validade deve ser hoje ou no futuro");
-    }
-  }
+
   return errors;
 }
 

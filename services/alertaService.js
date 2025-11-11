@@ -70,18 +70,21 @@ async function detectarAlertasEstoque() {
  */
 async function detectarAlertasValidade() {
   try {
-    // Obter produtos com data de validade próxima (dentro de 7 dias)
+    // Obter lotes com data de validade próxima (dentro de 7 dias)
     const hoje = new Date();
     const dataLimite = new Date();
     dataLimite.setDate(hoje.getDate() + 7); // 7 dias a partir de hoje
     
-    // Fazer a query diretamente para obter produtos com validade próxima
+    // Fazer a query para obter lotes com validade próxima que ainda têm estoque
     const sql = `
-      SELECT * FROM produtos 
-      WHERE data_validade IS NOT NULL 
-      AND data_validade <= ?
-      AND data_validade >= ?
-      AND status = 'Disponível'
+      SELECT l.*, p.nome as produto_nome 
+      FROM lotes l
+      JOIN produtos p ON l.produto_id = p.id
+      WHERE l.data_validade IS NOT NULL 
+      AND l.data_validade <= ?
+      AND l.data_validade >= ?
+      AND p.status = 'Disponível'
+      AND l.quantidade > 0
     `;
     
     const params = [
@@ -89,28 +92,31 @@ async function detectarAlertasValidade() {
       hoje.toISOString().split('T')[0]       // Formato YYYY-MM-DD
     ];
     
-    const produtos = await db.query(sql, params);
+    const lotes = await db.query(sql, params);
     
     const alertasCriados = [];
     
-    for (const produto of produtos) {
-      // Verificar se já existe um alerta ativo para este produto/tipo
+    for (const lote of lotes) {
+      // Verificar se já existe um alerta ativo para este produto/lote/tipo
       const alertaExistente = await alertaData.findByProdutoLocalTipo(
-        produto.id,
-        'Validade Próxima' // Usando o nome do tipo conforme a tabela
+        lote.produto_id,
+        'Lote Vencido', // Using the new alert type for lot expiration
+        null, // No specific location for lot-based alerts
+        lote.id // Include the lot_id for lot-specific alerts
       );
       
       if (!alertaExistente) {
         // Calcular dias até a validade
-        const dataValidade = new Date(produto.data_validade);
+        const dataValidade = new Date(lote.data_validade);
         const diferencaDias = Math.ceil((dataValidade - hoje) / (1000 * 60 * 60 * 24));
         
         // Criar novo alerta
-        const mensagem = `Produto "${produto.nome}" vence em ${diferencaDias} dia(s) (validade: ${produto.data_validade})`;
+        const mensagem = `Lote "${lote.numero_lote}" do produto "${lote.produto_nome}" vence em ${diferencaDias} dia(s) (validade: ${lote.data_validade})`;
         
         const novoAlerta = await alertaData.create({
-          tipo: 'Validade Próxima',
-          produto_id: produto.id,
+          tipo: 'Lote Vencido',
+          produto_id: lote.produto_id,
+          lote_id: lote.id,
           mensagem: mensagem
         });
         

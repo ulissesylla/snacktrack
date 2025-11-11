@@ -145,19 +145,21 @@ async function getEstatisticasAvancadas(params = {}) {
       }
     }
     
-    // Contar produtos com validade próxima (7 dias)
+    // Contar produtos com validade próxima (7 dias) - agora baseado em lotes
     const hoje = new Date();
     const dataLimite = new Date();
     dataLimite.setDate(hoje.getDate() + 7); // 7 dias a partir de hoje
     
     let produtosValidadeProxima = 0;
     const sqlValidade = `
-      SELECT COUNT(*) as count 
-      FROM produtos 
-      WHERE data_validade IS NOT NULL 
-      AND data_validade <= ?
-      AND data_validade >= ?
-      AND status = 'Disponível'
+      SELECT COUNT(DISTINCT l.produto_id) as count 
+      FROM lotes l
+      JOIN produtos p ON l.produto_id = p.id
+      WHERE l.data_validade IS NOT NULL 
+      AND l.data_validade <= ?
+      AND l.data_validade >= ?
+      AND p.status = 'Disponível'
+      AND l.quantidade > 0
     `;
     
     const paramsValidade = [

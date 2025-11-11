@@ -35,7 +35,6 @@ async function criarProduto(req, res) {
       estoque_minimo: req.body.estoque_minimo,
       fabricante: req.body.fabricante,
       tipo: req.body.tipo,
-      data_validade: req.body.data_validade,
     };
     const created = await produtoService.criar(payload);
     return res.status(201).json({ produto: created });
@@ -58,7 +57,6 @@ async function atualizarProduto(req, res) {
       estoque_minimo: req.body.estoque_minimo,
       fabricante: req.body.fabricante,
       tipo: req.body.tipo,
-      data_validade: req.body.data_validade,
       status: req.body.status,
     };
     const updated = await produtoService.atualizar(id, payload);

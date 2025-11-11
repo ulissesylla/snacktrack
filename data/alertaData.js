@@ -5,14 +5,16 @@ const db = require("../config/database");
  * @param {Object} alertaData - Dados do alerta
  * @param {string} alertaData.tipo - Tipo do alerta
  * @param {number} alertaData.produto_id - ID do produto
+ * @param {number} alertaData.lote_id - ID do lote (opcional)
  * @param {string} alertaData.mensagem - Mensagem do alerta
  * @param {boolean} alertaData.lida - Status de leitura (padrão: false)
  */
 async function create(alertaData) {
-  const sql = `INSERT INTO alertas (tipo, produto_id, mensagem, lida) VALUES (?, ?, ?, ?)`;
+  const sql = `INSERT INTO alertas (tipo, produto_id, lote_id, mensagem, lida) VALUES (?, ?, ?, ?, ?)`;
   const params = [
     alertaData.tipo,
     alertaData.produto_id,
+    alertaData.lote_id || null,
     alertaData.mensagem,
     alertaData.lida !== undefined ? alertaData.lida : false
   ];
@@ -32,14 +34,20 @@ async function create(alertaData) {
  * @param {number} produto_id - ID do produto
  * @param {string} tipo - Tipo do alerta
  * @param {number} local_id - ID do local (opcional)
+ * @param {number} lote_id - ID do lote (opcional)
  */
-async function findByProdutoLocalTipo(produto_id, tipo, local_id = null) {
+async function findByProdutoLocalTipo(produto_id, tipo, local_id = null, lote_id = null) {
   let sql = "SELECT * FROM alertas WHERE produto_id = ? AND tipo = ? AND lida = FALSE";
   const params = [produto_id, tipo];
   
   if (local_id) {
     sql += " AND local_id = ?"; // Ajustar se for adicionado local_id na tabela
     params.push(local_id);
+  }
+  
+  if (lote_id) {
+    sql += " AND lote_id = ?";
+    params.push(lote_id);
   }
   
   sql += " LIMIT 1";
@@ -54,12 +62,15 @@ async function findByProdutoLocalTipo(produto_id, tipo, local_id = null) {
  * @param {string} filters.tipo - Filtrar por tipo de alerta
  * @param {boolean} filters.lido - Filtrar por status de leitura
  * @param {number} filters.produto_id - Filtrar por produto
+ * @param {number} filters.lote_id - Filtrar por lote (opcional)
  */
 async function findAll(filters = {}) {
-  let sql = `SELECT a.id, a.tipo, a.produto_id, a.mensagem, a.lida, a.data_alerta,
-                    p.nome as produto_nome
+  let sql = `SELECT a.id, a.tipo, a.produto_id, a.lote_id, a.mensagem, a.lida, a.data_alerta,
+                    p.nome as produto_nome,
+                    l.numero_lote
              FROM alertas a
              LEFT JOIN produtos p ON a.produto_id = p.id
+             LEFT JOIN lotes l ON a.lote_id = l.id
              WHERE 1=1`;
   const params = [];
   
@@ -76,6 +87,11 @@ async function findAll(filters = {}) {
   if (filters.produto_id) {
     sql += " AND a.produto_id = ?";
     params.push(filters.produto_id);
+  }
+  
+  if (filters.lote_id) {
+    sql += " AND a.lote_id = ?";
+    params.push(filters.lote_id);
   }
   
   sql += " ORDER BY a.data_alerta DESC";
@@ -117,10 +133,12 @@ async function update(id, updates) {
  * @param {number} id - ID do alerta
  */
 async function findById(id) {
-  const sql = `SELECT a.id, a.tipo, a.produto_id, a.mensagem, a.lida, a.data_alerta,
-                      p.nome as produto_nome
+  const sql = `SELECT a.id, a.tipo, a.produto_id, a.lote_id, a.mensagem, a.lida, a.data_alerta,
+                      p.nome as produto_nome,
+                      l.numero_lote
                FROM alertas a
                LEFT JOIN produtos p ON a.produto_id = p.id
+               LEFT JOIN lotes l ON a.lote_id = l.id
                WHERE a.id = ? LIMIT 1`;
   const rows = await db.query(sql, [id]);
   return rows[0] || null;

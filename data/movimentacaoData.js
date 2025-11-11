@@ -2,7 +2,7 @@ const db = require("../config/database");
 
 /**
  * Inserir nova movimentação. Se `connection` for fornecida, usar essa conexão (transação).
- * movimentacao: { tipo, produto_id, local_origem_id, local_destino_id, quantidade, usuario_id }
+ * movimentacao: { tipo, produto_id, lote_id, local_origem_id, local_destino_id, quantidade, usuario_id }
  */
 async function create(movimentacao, connection = null) {
   // Use transaction if no connection provided
@@ -16,10 +16,11 @@ async function create(movimentacao, connection = null) {
     }
 
     // Insert the movement record
-    const sql = `INSERT INTO movimentacoes (tipo, produto_id, local_origem_id, local_destino_id, quantidade, usuario_id, data_movimentacao) VALUES (?, ?, ?, ?, ?, ?, NOW())`;
+    const sql = `INSERT INTO movimentacoes (tipo, produto_id, lote_id, local_origem_id, local_destino_id, quantidade, usuario_id, data_movimentacao) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`;
     const params = [
       movimentacao.tipo,
       movimentacao.produto_id,
+      movimentacao.lote_id || null,
       movimentacao.local_origem_id || null,
       movimentacao.local_destino_id || null,
       movimentacao.quantidade,
@@ -29,28 +30,34 @@ async function create(movimentacao, connection = null) {
     const insertId = res.insertId || (res && res.affectedRows ? res.insertId : undefined);
     
     if (insertId) {
-      // Update the product's overall estoque_atual based on the movement type
-      // The estoque_atual in produtos table represents the total stock across all locations for that product
-      if (movimentacao.tipo === 'Entrada') {
-        // For entries, we increase overall product stock
+      // Update lot quantities based on movement type
+      if (movimentacao.tipo === 'Entrada' && movimentacao.lote_id) {
+        // For entries, increase the lot quantity
         const updateSql = `
-          UPDATE produtos 
-          SET estoque_atual = estoque_atual + ?
+          UPDATE lotes 
+          SET quantidade = quantidade + ?
           WHERE id = ?
         `;
-        await db.query(updateSql, [movimentacao.quantidade, movimentacao.produto_id], conn);
-      } else if (movimentacao.tipo === 'Saída') {
-        // For exits, we decrease overall product stock
+        await db.query(updateSql, [movimentacao.quantidade, movimentacao.lote_id], conn);
+      } else if (movimentacao.tipo === 'Saída' && movimentacao.lote_id) {
+        // For exits, decrease the lot quantity
         const updateSql = `
-          UPDATE produtos 
-          SET estoque_atual = estoque_atual - ?
+          UPDATE lotes 
+          SET quantidade = quantidade - ?
           WHERE id = ?
         `;
-        await db.query(updateSql, [movimentacao.quantidade, movimentacao.produto_id], conn);
-      } else if (movimentacao.tipo === 'Transferência') {
-        // For transfers, the overall product stock remains the same
-        // The stock just moves between locations, so no change to the product's estoque_atual
+        await db.query(updateSql, [movimentacao.quantidade, movimentacao.lote_id], conn);
+      } else if (movimentacao.tipo === 'Transferência' && movimentacao.lote_id) {
+        // For transfers, update the lot's location
+        const updateLocationSql = `
+          UPDATE lotes 
+          SET localizacao_id = ?
+          WHERE id = ?
+        `;
+        await db.query(updateLocationSql, [movimentacao.local_destino_id, movimentacao.lote_id], conn);
       }
+      // Note: In the new schema, we no longer directly update the product's estoque_atual 
+      // as it's calculated via the view from the lots table
 
       const rows = await db.query("SELECT * FROM movimentacoes WHERE id = ? LIMIT 1", [insertId], conn);
       
@@ -82,17 +89,14 @@ async function create(movimentacao, connection = null) {
  * Retorna number.
  */
 async function getEstoqueAtual(produtoId, localId, connection = null) {
+  // In the new lot-based system, we calculate stock by summing lot quantities
+  // where the lot's location matches the requested location
   const sql = `
-    SELECT COALESCE(SUM(CASE
-      WHEN tipo = 'Entrada' AND local_destino_id = ? THEN quantidade
-      WHEN tipo = 'Saída' AND local_origem_id = ? THEN -quantidade
-      WHEN tipo = 'Transferência' AND local_origem_id = ? THEN -quantidade
-      WHEN tipo = 'Transferência' AND local_destino_id = ? THEN quantidade
-      ELSE 0 END), 0) AS estoque_atual
-    FROM movimentacoes
-    WHERE produto_id = ?
+    SELECT COALESCE(SUM(l.quantidade), 0) AS estoque_atual
+    FROM lotes l
+    WHERE l.produto_id = ? AND l.localizacao_id = ?
   `;
-  const params = [localId, localId, localId, localId, produtoId];
+  const params = [produtoId, localId];
   const rows = await db.query(sql, params, connection);
   const val = rows && rows[0] ? rows[0].estoque_atual : 0;
   return Number(val) || 0;
@@ -113,16 +117,11 @@ async function getMovimentacoesByLocal(localId, connection = null) {
 // Nova função para obter estoque atual por produto e local específicos
 async function getEstoqueAtualByProdutoLocal(produtoId, localId, connection = null) {
   const sql = `
-    SELECT COALESCE(SUM(CASE
-      WHEN tipo = 'Entrada' AND local_destino_id = ? THEN quantidade
-      WHEN tipo = 'Saída' AND local_origem_id = ? THEN -quantidade
-      WHEN tipo = 'Transferência' AND local_origem_id = ? THEN -quantidade
-      WHEN tipo = 'Transferência' AND local_destino_id = ? THEN quantidade
-      ELSE 0 END), 0) AS estoque_atual
-    FROM movimentacoes
-    WHERE produto_id = ?
+    SELECT COALESCE(SUM(l.quantidade), 0) AS estoque_atual
+    FROM lotes l
+    WHERE l.produto_id = ? AND l.localizacao_id = ?
   `;
-  const params = [localId, localId, localId, localId, produtoId];
+  const params = [produtoId, localId];
   const rows = await db.query(sql, params, connection);
   const val = rows && rows[0] ? rows[0].estoque_atual : 0;
   return Number(val) || 0;
@@ -143,18 +142,13 @@ async function getEstoqueAtualTodos(params = {}, connection = null) {
     SELECT 
       p.id AS produto_id,
       p.nome AS produto_nome,
-      l.id AS local_id,
-      l.nome AS local_nome,
-      COALESCE(SUM(CASE
-        WHEN m.tipo = 'Entrada' AND m.local_destino_id = l.id THEN m.quantidade
-        WHEN m.tipo = 'Saída' AND m.local_origem_id = l.id THEN -m.quantidade
-        WHEN m.tipo = 'Transferência' AND m.local_origem_id = l.id THEN -m.quantidade
-        WHEN m.tipo = 'Transferência' AND m.local_destino_id = l.id THEN m.quantidade
-        ELSE 0 END), 0) AS estoque_atual
+      loc.id AS local_id,
+      loc.nome AS local_nome,
+      COALESCE(SUM(lt.quantidade), 0) AS estoque_atual
     FROM produtos p
-    CROSS JOIN locais l
-    LEFT JOIN movimentacoes m ON p.id = m.produto_id
-    WHERE p.status = 'Disponível' AND l.status = 'Ativo'
+    CROSS JOIN locais loc
+    LEFT JOIN lotes lt ON lt.produto_id = p.id AND lt.localizacao_id = loc.id
+    WHERE p.status = 'Disponível' AND loc.status = 'Ativo'
   `;
   
   const queryParams = [];
@@ -166,11 +160,11 @@ async function getEstoqueAtualTodos(params = {}, connection = null) {
   }
   
   if (local_id) {
-    sql += " AND l.id = ?";
+    sql += " AND loc.id = ?";
     queryParams.push(local_id);
   }
   
-  sql += " GROUP BY p.id, p.nome, l.id, l.nome HAVING estoque_atual > 0";
+  sql += " GROUP BY p.id, p.nome, loc.id, loc.nome HAVING estoque_atual > 0";
   
   const rows = await db.query(sql, queryParams, connection);
   return rows;

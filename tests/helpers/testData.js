@@ -26,7 +26,6 @@ function createTestProduct(data = {}) {
     estoque_minimo: data.estoque_minimo || 5,
     fabricante: data.fabricante || 'Test Manufacturer',
     tipo: data.tipo || 'Produto acabado',
-    data_validade: data.data_validade || null,
     status: data.status || 'Disponível',
     data_criacao: data.data_criacao || new Date().toISOString().slice(0, 19).replace('T', ' '),
   };
@@ -44,12 +43,27 @@ function createTestLocal(data = {}) {
   };
 }
 
+// Create a test lote
+function createTestLote(data = {}) {
+  return {
+    id: data.id || 1,
+    produto_id: data.produto_id || 1,
+    numero_lote: data.numero_lote || 'LOT-001',
+    quantidade: data.quantidade || 10,
+    data_validade: data.data_validade || null,
+    data_fabricacao: data.data_fabricacao || null,
+    data_entrada: data.data_entrada || new Date().toISOString().slice(0, 19).replace('T', ' '),
+    localizacao_id: data.localizacao_id || null,
+  };
+}
+
 // Create a test movimentacao
 function createTestMovimentacao(data = {}) {
   return {
     id: data.id || 1,
     tipo: data.tipo || 'Entrada', // 'Entrada', 'Saída', or 'Transferência'
     produto_id: data.produto_id || 1,
+    lote_id: data.lote_id || null,  // Added lote_id field
     local_origem_id: data.local_origem_id || null,
     local_destino_id: data.local_destino_id || 1,
     quantidade: data.quantidade || 10,
@@ -68,6 +82,7 @@ module.exports = {
   createTestUser,
   createTestProduct,
   createTestLocal,
+  createTestLote,
   createTestMovimentacao,
   resetTestData
 };

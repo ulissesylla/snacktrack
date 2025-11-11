@@ -4,6 +4,7 @@
 const mockData = {
   movimentacoes: [],
   produtos: [],
+  lotes: [],
   locais: [],
   usuarios: [],
 };
@@ -94,12 +95,24 @@ class MockDatabase {
         estoque_minimo: params[5] || 0,
         fabricante: params[6],
         tipo: params[7] || 'Matéria-prima',
-        data_validade: params[8],
-        status: params[9] || 'Disponível',
+        status: params[8] || 'Disponível',
         data_criacao: new Date().toISOString().slice(0, 19).replace('T', ' '),
       };
       this.data.produtos.push(newProduto);
       return { insertId: newProduto.id, affectedRows: 1 };
+    } else if (sql.includes('INTO lotes')) {
+      const newLote = {
+        id: this.data.lotes.length + 1,
+        produto_id: params[0],
+        numero_lote: params[1],
+        quantidade: params[2] || 0,
+        data_validade: params[3],
+        data_fabricacao: params[4],
+        data_entrada: params[5] || new Date().toISOString().slice(0, 19).replace('T', ' '),
+        localizacao_id: params[6],
+      };
+      this.data.lotes.push(newLote);
+      return { insertId: newLote.id, affectedRows: 1 };
     } else if (sql.includes('INTO locais')) {
       const newLocal = {
         id: this.data.locais.length + 1,
@@ -116,11 +129,12 @@ class MockDatabase {
         id: this.data.movimentacoes.length + 1,
         tipo: params[0],
         produto_id: params[1],
-        local_origem_id: params[2],
-        local_destino_id: params[3],
-        quantidade: params[4],
-        usuario_id: params[5],
-        data_movimentacao: params[6] || new Date().toISOString().slice(0, 19).replace('T', ' '),
+        lote_id: params[2],
+        local_origem_id: params[3],
+        local_destino_id: params[4],
+        quantidade: params[5],
+        usuario_id: params[6],
+        data_movimentacao: params[7] || new Date().toISOString().slice(0, 19).replace('T', ' '),
       };
       this.data.movimentacoes.push(newMovimentacao);
       return { insertId: newMovimentacao.id, affectedRows: 1 };
@@ -147,9 +161,17 @@ class MockDatabase {
     if (sql.includes('UPDATE produtos')) {
       const produto = this.data.produtos.find(p => p.id == lastParam);
       if (produto) {
-        const fields = ['nome', 'descricao', 'preco', 'unidade_medida', 'categoria', 'estoque_minimo', 'fabricante', 'tipo', 'data_validade', 'status'];
+        const fields = ['nome', 'descricao', 'preco', 'unidade_medida', 'categoria', 'estoque_minimo', 'fabricante', 'tipo', 'status'];
         updates.forEach((value, index) => {
           if (value !== undefined) produto[fields[index]] = value;
+        });
+      }
+    } else if (sql.includes('UPDATE lotes')) {
+      const lote = this.data.lotes.find(l => l.id == lastParam);
+      if (lote) {
+        const fields = ['produto_id', 'numero_lote', 'quantidade', 'data_validade', 'data_fabricacao', 'localizacao_id'];
+        updates.forEach((value, index) => {
+          if (value !== undefined) lote[fields[index]] = value;
         });
       }
     } else if (sql.includes('UPDATE locais')) {

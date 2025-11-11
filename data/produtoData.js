@@ -21,8 +21,8 @@ function normalizeDate(val) {
 
 async function findAll({ onlyAvailable = true } = {}) {
   const sql = onlyAvailable
-    ? "SELECT id, nome, descricao, preco, unidade_medida, categoria, estoque_minimo, estoque_atual, fabricante, tipo, data_validade, status, data_criacao FROM produtos WHERE status = ? ORDER BY id DESC"
-    : "SELECT id, nome, descricao, preco, unidade_medida, categoria, estoque_minimo, estoque_atual, fabricante, tipo, data_validade, status, data_criacao FROM produtos ORDER BY id DESC";
+    ? "SELECT p.id, p.nome, p.descricao, p.preco, p.unidade_medida, p.categoria, p.estoque_minimo, p.fabricante, p.tipo, p.status, p.data_criacao, COALESCE(v.estoque_atual, 0) as estoque_atual FROM produtos p LEFT JOIN estoque_atual_produtos v ON p.id = v.produto_id WHERE p.status = ? ORDER BY p.id DESC"
+    : "SELECT p.id, p.nome, p.descricao, p.preco, p.unidade_medida, p.categoria, p.estoque_minimo, p.fabricante, p.tipo, p.status, p.data_criacao, COALESCE(v.estoque_atual, 0) as estoque_atual FROM produtos p LEFT JOIN estoque_atual_produtos v ON p.id = v.produto_id ORDER BY p.id DESC";
   const params = onlyAvailable ? ["Disponível"] : [];
   const rows = await db.query(sql, params);
   return rows;
@@ -30,7 +30,7 @@ async function findAll({ onlyAvailable = true } = {}) {
 
 async function findById(id) {
   const sql =
-    "SELECT id, nome, descricao, preco, unidade_medida, categoria, estoque_minimo, estoque_atual, fabricante, tipo, data_validade, status, data_criacao FROM produtos WHERE id = ? LIMIT 1";
+    "SELECT p.id, p.nome, p.descricao, p.preco, p.unidade_medida, p.categoria, p.estoque_minimo, p.fabricante, p.tipo, p.status, p.data_criacao, COALESCE(v.estoque_atual, 0) as estoque_atual FROM produtos p LEFT JOIN estoque_atual_produtos v ON p.id = v.produto_id WHERE p.id = ? LIMIT 1";
   const rows = await db.query(sql, [id]);
   return rows[0] || null;
 }
@@ -38,9 +38,8 @@ async function findById(id) {
 async function create(payload) {
   // allow optional status on create; default DB will handle if not provided
   const sql = payload.status
-    ? "INSERT INTO produtos (nome, descricao, preco, unidade_medida, categoria, estoque_minimo, estoque_atual, fabricante, tipo, data_validade, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-    : "INSERT INTO produtos (nome, descricao, preco, unidade_medida, categoria, estoque_minimo, estoque_atual, fabricante, tipo, data_validade) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-  const safeDate = normalizeDate(payload.data_validade);
+    ? "INSERT INTO produtos (nome, descricao, preco, unidade_medida, categoria, estoque_minimo, fabricante, tipo, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    : "INSERT INTO produtos (nome, descricao, preco, unidade_medida, categoria, estoque_minimo, fabricante, tipo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
   const params = payload.status
     ? [
         payload.nome,
@@ -49,10 +48,8 @@ async function create(payload) {
         payload.unidade_medida || "unidade",
         payload.categoria || null,
         payload.estoque_minimo || 0,
-        payload.estoque_atual || 0,
         payload.fabricante || null,
         payload.tipo || "Matéria-prima",
-        safeDate,
         payload.status,
       ]
     : [
@@ -62,17 +59,15 @@ async function create(payload) {
         payload.unidade_medida || "unidade",
         payload.categoria || null,
         payload.estoque_minimo || 0,
-        payload.estoque_atual || 0,
         payload.fabricante || null,
         payload.tipo || "Matéria-prima",
-        safeDate,
       ];
   const res = await db.query(sql, params);
   const insertId =
     res.insertId || (res && res.affectedRows ? res.insertId : undefined);
   if (insertId) return findById(insertId);
   const rows = await db.query(
-    "SELECT id, nome, descricao, preco, unidade_medida, categoria, estoque_minimo, estoque_atual, fabricante, tipo, data_validade, status, data_criacao FROM produtos WHERE nome = ? ORDER BY id DESC LIMIT 1",
+    "SELECT p.id, p.nome, p.descricao, p.preco, p.unidade_medida, p.categoria, p.estoque_minimo, p.fabricante, p.tipo, p.status, p.data_criacao, COALESCE(v.estoque_atual, 0) as estoque_atual FROM produtos p LEFT JOIN estoque_atual_produtos v ON p.id = v.produto_id WHERE p.nome = ? ORDER BY p.id DESC LIMIT 1",
     [payload.nome]
   );
   return rows[0] || null;
@@ -88,19 +83,14 @@ async function update(id, payload) {
     "unidade_medida",
     "categoria",
     "estoque_minimo",
-    "estoque_atual",
     "fabricante",
     "tipo",
-    "data_validade",
     "status",
   ];
   fields.forEach((f) => {
     if (typeof payload[f] !== "undefined") {
       sets.push(`${f} = ?`);
-      // normalize date and empty-string values to null for DATE columns
-      if (f === "data_validade") {
-        params.push(normalizeDate(payload[f]));
-      } else if (payload[f] === "") {
+      if (payload[f] === "") {
         params.push(null);
       } else {
         params.push(payload[f]);
