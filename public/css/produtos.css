@@ -1,22 +1,4 @@
 /* Produtos page styles — keep consistent with global styles */
-.table-wrap {
-  overflow-x: auto;
-}
-#produtosTable {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
-#produtosTable th,
-#produtosTable td {
-  padding: 8px 10px;
-  border-bottom: 1px solid #e6e6e6;
-  text-align: left;
-}
-#produtosTable th {
-  background: #fafafa;
-  font-weight: 600;
-}
 .modal .form-row {
   margin-bottom: 8px;
 }

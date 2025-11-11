@@ -19,16 +19,16 @@
       <h1>Gestão de Lotes</h1>
       <button id="btnNew">Novo Lote</button>
       <div class="table-wrap">
-        <table id="lotesTable">
+        <table id="lotesTable" class="generic-table">
           <thead>
             <tr>
-              <th>Número do Lote</th>
+              <th>Nº Lote</th>
               <th>Produto</th>
               <th>Quantidade</th>
-              <th>Data de Validade</th>
-              <th>Data de Fabricação</th>
+              <th>Vencimento</th>
+              <th>Fabricação</th>
               <th>Localização</th>
-              <th>Data de Entrada</th>
+              <th>Entrada</th>
               <th>Ações</th>
             </tr>
           </thead>
@@ -52,18 +52,18 @@
           </button>
         </div>
         <form id="loteForm" class="modal-body">
+          <div class="form-row full">
+            <label for="numero_lote">Número do Lote</label>
+            <input id="numero_lote" name="numero_lote" type="text" required />
+            <div class="error" id="err-numero_lote"></div>
+          </div>
+
           <div class="form-row">
             <label for="produto_id">Produto</label>
             <select id="produto_id" name="produto_id" required>
               <!-- Options will be populated dynamically -->
             </select>
             <div class="error" id="err-produto_id"></div>
-          </div>
-
-          <div class="form-row">
-            <label for="numero_lote">Número do Lote</label>
-            <input id="numero_lote" name="numero_lote" type="text" required />
-            <div class="error" id="err-numero_lote"></div>
           </div>
 
           <div class="form-row">

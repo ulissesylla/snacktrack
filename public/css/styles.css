@@ -127,7 +127,30 @@ main.container {
   }
 }
 
-/* Users table and buttons */
+/* Table component - reusable styles for all tables across the application */
+.table-wrap {
+  overflow-x: auto;
+}
+
+.generic-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.generic-table th,
+.generic-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #e6e6e6;
+  text-align: left;
+}
+
+.generic-table th {
+  background: #fafafa;
+  font-weight: 600;
+}
+
+/* Specific table overrides if needed */
 #usersTable {
   width: 100%;
   border-collapse: collapse;
