@@ -11,6 +11,7 @@ const produtoRoutes = require("./routes/produtoRoutes");
 const movimentacaoRoutes = require("./routes/movimentacaoRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const alertaRoutes = require("./routes/alertaRoutes");
+const loteRoutes = require("./routes/loteRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -32,6 +33,7 @@ app.use("/api/produtos", produtoRoutes);
 app.use("/api/movimentacoes", movimentacaoRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/alertas", alertaRoutes);
+app.use("/api/lotes", loteRoutes);
 
 // Routes
 app.use("/", routes);
