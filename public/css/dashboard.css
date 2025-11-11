@@ -88,36 +88,10 @@
 /* Tabelas do dashboard */
 .dashboard-table {
     width: 100%;
-    border-collapse: collapse;
     background: white;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     overflow: hidden;
-}
-
-.dashboard-table thead {
-    background-color: #f9fafb;
-}
-
-.dashboard-table th {
-    padding: 1rem;
-    text-align: left;
-    font-weight: 600;
-    color: #374151;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.dashboard-table td {
-    padding: 1rem;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.dashboard-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-.dashboard-table tbody tr:hover {
-    background-color: #f9fafb;
 }
 
 /* Estados especiais para estoque baixo */

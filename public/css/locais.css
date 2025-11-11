@@ -16,18 +16,6 @@
 }
 
 /* reuse modal/table patterns from global styles */
-/* Table styling aligns with styles.css */
-#locaisTable {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 16px;
-}
-#locaisTable th,
-#locaisTable td {
-  padding: 10px 8px;
-  border-bottom: 1px solid #eef2f7;
-  text-align: left;
-}
 
 /* modal specifics (reuse users modal look) */
 /* modal styles moved to global styles.css */

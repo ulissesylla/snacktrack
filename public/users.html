@@ -14,18 +14,20 @@
     <main class="container">
       <h1>Gestão de Usuários</h1>
       <button id="btnNew">Novo usuário</button>
-      <table id="usersTable">
-        <thead>
-          <tr>
-            <th>Nome</th>
-            <th>Email</th>
-            <th>Função</th>
-            <th>Status</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div class="table-wrap">
+        <table id="usersTable" class="generic-table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Email</th>
+              <th>Função</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </main>
     <!-- Modal for creating a new user -->
     <div id="userModal" class="modal-overlay" aria-hidden="true">
