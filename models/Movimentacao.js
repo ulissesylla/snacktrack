@@ -1,8 +1,9 @@
 class Movimentacao {
-  constructor({ id, tipo, produto_id, local_origem_id, local_destino_id, quantidade, usuario_id, data_movimentacao } = {}) {
+  constructor({ id, tipo, produto_id, lote_id, local_origem_id, local_destino_id, quantidade, usuario_id, data_movimentacao } = {}) {
     this.id = id;
     this.tipo = tipo;
     this.produto_id = produto_id;
+    this.lote_id = lote_id;
     this.local_origem_id = local_origem_id;
     this.local_destino_id = local_destino_id;
     this.quantidade = quantidade;
@@ -22,6 +23,7 @@ class Movimentacao {
     return {
       tipo: this.tipo,
       produto_id: this.produto_id,
+      lote_id: this.lote_id || null,
       local_origem_id: this.local_origem_id || null,
       local_destino_id: this.local_destino_id || null,
       quantidade: this.quantidade,
@@ -34,6 +36,7 @@ class Movimentacao {
       id: this.id,
       tipo: this.tipo,
       produto_id: this.produto_id,
+      lote_id: this.lote_id,
       local_origem_id: this.local_origem_id,
       local_destino_id: this.local_destino_id,
       quantidade: this.quantidade,
