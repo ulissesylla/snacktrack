@@ -16,8 +16,8 @@
       aria-live="assertive"
     ></div>
     <main class="container">
-      <h1>Gestão de Lotes</h1>
-      <button id="btnNew">Novo Lote</button>
+      <h1>Consulta de Lotes</h1>
+      <button id="btnNew">Nova Entrada</button>
       <div class="table-wrap">
         <table id="lotesTable" class="generic-table">
           <thead>
@@ -36,77 +36,6 @@
         </table>
       </div>
     </main>
-
-    <!-- Modal for create/edit lote -->
-    <div id="loteModal" class="modal-overlay" aria-hidden="true">
-      <div
-        class="modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="modalTitle"
-      >
-        <div class="modal-header">
-          <h2 id="modalTitle">Novo Lote</h2>
-          <button id="modalClose" class="modal-close" aria-label="Fechar">
-            ×
-          </button>
-        </div>
-        <form id="loteForm" class="modal-body">
-          <div class="form-row full">
-            <label for="numero_lote">Número do Lote</label>
-            <input id="numero_lote" name="numero_lote" type="text" required />
-            <div class="error" id="err-numero_lote"></div>
-          </div>
-
-          <div class="form-row">
-            <label for="produto_id">Produto</label>
-            <select id="produto_id" name="produto_id" required>
-              <!-- Options will be populated dynamically -->
-            </select>
-            <div class="error" id="err-produto_id"></div>
-          </div>
-
-          <div class="form-row">
-            <label for="quantidade">Quantidade</label>
-            <input
-              id="quantidade"
-              name="quantidade"
-              type="number"
-              step="0.01"
-              min="0"
-              required
-            />
-            <div class="error" id="err-quantidade"></div>
-          </div>
-
-          <div class="form-row">
-            <label for="data_validade">Data de Validade</label>
-            <input id="data_validade" name="data_validade" type="date" />
-            <div class="error" id="err-data_validade"></div>
-          </div>
-
-          <div class="form-row">
-            <label for="data_fabricacao">Data de Fabricação</label>
-            <input id="data_fabricacao" name="data_fabricacao" type="date" />
-            <div class="error" id="err-data_fabricacao"></div>
-          </div>
-
-          <div class="form-row">
-            <label for="localizacao_id">Localização</label>
-            <select id="localizacao_id" name="localizacao_id">
-              <option value="">Selecione um local</option>
-              <!-- Options will be populated dynamically -->
-            </select>
-            <div class="error" id="err-localizacao_id"></div>
-          </div>
-
-          <div class="form-actions">
-            <button type="submit" id="btnSubmit">Criar</button>
-            <button type="button" id="btnCancel">Cancelar</button>
-          </div>
-        </form>
-      </div>
-    </div>
 
     <link rel="stylesheet" href="/css/navbar.css" />
     <script src="/js/auth.js"></script>
