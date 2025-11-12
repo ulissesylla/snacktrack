@@ -15,6 +15,7 @@ router.delete("/:id", requireRole(["Gerente"]), controller.removerLote);        
 
 // Rotas específicas por produto
 router.get("/produto/:produtoId", controller.buscarLotesPorProduto);  // Buscar lotes por produto
+router.get("/produto/:produtoId/local/:localizacaoId", controller.buscarLotesPorProdutoLocalizacao);  // Buscar lotes por produto e localização
 
 // Rotas para lotes com vencimento
 router.get("/vencimento/proximo", controller.getLotesProximosValidade);  // Lotes próximos do vencimento

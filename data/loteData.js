@@ -205,6 +205,34 @@ async function findByProduto(produtoId, { withExpired = true } = {}) {
 }
 
 /**
+ * Obter lotes por produto e localização
+ * @param {number} produtoId - ID do produto
+ * @param {number} localizacaoId - ID da localização
+ * @param {Object} options - Opções de filtragem
+ * @returns {Array} Lista de lotes do produto na localização específica
+ */
+async function findByProdutoLocalizacao(produtoId, localizacaoId, { withExpired = true } = {}) {
+  let sql = `
+    SELECT l.*, p.nome as produto_nome, loc.nome as local_nome
+    FROM lotes l
+    JOIN produtos p ON l.produto_id = p.id
+    LEFT JOIN locais loc ON l.localizacao_id = loc.id
+    WHERE l.produto_id = ? AND l.localizacao_id = ?
+  `;
+  
+  const params = [produtoId, localizacaoId];
+  
+  if (!withExpired) {
+    sql += " AND (l.data_validade IS NULL OR l.data_validade >= CURDATE())";
+  }
+  
+  sql += " ORDER BY l.data_validade ASC, l.data_entrada ASC";
+  
+  const rows = await db.query(sql, params);
+  return rows;
+}
+
+/**
  * Obter lotes com estoque baixo
  * @param {number} diasValidade - Dias para considerar como "próximo do vencimento"
  * @returns {Array} Lista de lotes próximos do vencimento
@@ -253,6 +281,7 @@ module.exports = {
   update, 
   remove,
   findByProduto,
+  findByProdutoLocalizacao,
   getLotesProximosValidade,
   getLotesVencidos 
 };

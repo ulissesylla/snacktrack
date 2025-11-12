@@ -13,55 +13,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         return;
     }
 
-    // Adicionar campo de seleção de lote após o campo de quantidade
-    const quantidadeDiv = document.querySelector('#quantidade').closest('.form-group');
-    const lotesContainer = document.createElement('div');
-    lotesContainer.className = 'form-group';
-    lotesContainer.innerHTML = `
-      <label for="loteId">Lote (Opcional)</label>
-      <select class="form-control" id="loteId" name="lote_id">
-        <option value="">Não especificar lote (FIFO)</option>
-        <!-- Preenchido via JavaScript -->
-      </select>
-      <div class="error-message" id="loteError"></div>
-    `;
-    quantidadeDiv.parentNode.insertBefore(lotesContainer, quantidadeDiv.nextSibling);
-    
-    // Adicionar campo de seleção de motivo de saída
-    const loteDiv = document.querySelector('#loteId').closest('.form-group');
-    const motivoContainer = document.createElement('div');
-    motivoContainer.className = 'form-group';
-    motivoContainer.innerHTML = `
-      <label for="motivoSaida">Motivo da Saída *</label>
-      <select class="form-control" id="motivoSaida" name="motivo_saida" required>
-        <option value="">Selecione o motivo da saída</option>
-        <option value="Venda">Venda</option>
-        <option value="Vencimento">Vencimento</option>
-        <option value="Danificado">Danificado</option>
-        <option value="Descarte">Descarte</option>
-        <option value="Devolução a Fornecedor">Devolução a Fornecedor</option>
-        <option value="Perda">Perda</option>
-        <option value="Promoção/Brinde">Promoção/Brinde</option>
-        <option value="outro">Outro (especifique)</option>
-      </select>
-      <div class="error-message" id="motivoSaidaError"></div>
-    `;
-    loteDiv.parentNode.insertBefore(motivoContainer, loteDiv.nextSibling);
-    
-    // Adicionar campo de texto para "outro motivo" (oculto por padrão)
-    const motivoSelect = document.getElementById('motivoSaida');
-    const outroMotivoContainer = document.createElement('div');
-    outroMotivoContainer.className = 'form-group';
-    outroMotivoContainer.id = 'campoOutroMotivo';
-    outroMotivoContainer.style.display = 'none'; // Oculto por padrão
-    outroMotivoContainer.innerHTML = `
-      <label for="outroMotivo">Especifique o Motivo *</label>
-      <textarea class="form-control" id="outroMotivo" name="outro_motivo" 
-                rows="2" maxlength="255" placeholder="Descreva o motivo da saída..."></textarea>
-      <small id="caracteresRestantes" class="form-hint">255 caracteres restantes</small>
-      <div class="error-message" id="outroMotivoError"></div>
-    `;
-    loteDiv.parentNode.insertBefore(outroMotivoContainer, loteDiv.nextSibling);
+
     
     // Carregar dados iniciais
     carregarProdutos();
@@ -108,9 +60,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
     
+    quantidadeInput.addEventListener('input', validarQuantidadeEmTempoReal);
+    
     // Configurar eventos para o campo de motivo de saída
     const motivoSaidaSelect = document.getElementById('motivoSaida');
     const campoOutroMotivo = document.getElementById('campoOutroMotivo');
+    const outroMotivoTextarea = document.getElementById('outroMotivo');
+    const caracteresRestantesSpan = document.getElementById('caracteresRestantes');
     
     if (motivoSaidaSelect) {
         motivoSaidaSelect.addEventListener('change', function() {
@@ -122,14 +78,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
     
-    // Configurar contador de caracteres para o campo de "outro motivo"
-    const outroMotivoTextarea = document.getElementById('outroMotivo');
-    const caracteresRestantesSpan = document.getElementById('caracteresRestantes');
-    
     if (outroMotivoTextarea && caracteresRestantesSpan) {
         // Função para atualizar contador de caracteres
         function atualizarContador() {
-            const maxLength = 255;
+            const maxLength = 40;
             const currentLength = outroMotivoTextarea.value.length;
             const remaining = maxLength - currentLength;
             caracteresRestantesSpan.textContent = `${remaining} caracteres restantes`;
@@ -147,8 +99,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Inicializar contador
         atualizarContador();
     }
-    
-    quantidadeInput.addEventListener('input', validarQuantidadeEmTempoReal);
 });
 
 // Variáveis para controle do formulário
@@ -255,43 +205,109 @@ async function carregarLocaisComEstoque(produtoId) {
 // Função para carregar lotes do produto no local selecionado
 async function carregarLotesPorProdutoLocal(produtoId, localId) {
     try {
-        // Primeiro obter todos os lotes do produto
-        const response = await fetch(`/api/lotes/produto/${produtoId}`);
+        // Obter lotes específicos do produto e local
+        const response = await fetch(`/api/lotes/produto/${produtoId}/local/${localId}`);
         if (response.ok) {
             const data = await response.json();
             const lotes = data.lotes || [];
             
-            // Agora filtrar apenas os lotes que estão no local selecionado e têm estoque
-            const lotesFiltrados = [];
-            
-            for (const lote of lotes) {
-                // Verificar estoque específico para este lote
-                const estoqueResponse = await fetch(`/api/movimentacoes/estoque?produto_id=${produtoId}&local_id=${localId}`);
-                const estoqueData = await estoqueResponse.json();
-                
-                // Note: Atualmente não temos uma API que retorna estoque por lote e local
-                // Por enquanto, mostraremos todos os lotes do produto no local
-                if (estoqueData.estoque_atual > 0) {
-                    lotesFiltrados.push(lote);
-                }
-            }
-            
             const loteSelect = document.getElementById('loteId');
             loteSelect.innerHTML = '<option value="">Não especificar lote (FIFO)</option>';
             
-            lotesFiltrados.forEach(lote => {
+            // Determinar se há lotes próximos do vencimento (prazo padrão: 7 dias)
+            const hoje = new Date();
+            const proximoVencimento = new Date();
+            proximoVencimento.setDate(hoje.getDate() + 7); // 7 dias a partir de hoje
+            
+            lotes.forEach(lote => {
                 const option = document.createElement('option');
                 option.value = lote.id;
-                // Mostrar número do lote com data de validade
-                const validade = lote.data_validade ? ` - Vence: ${new Date(lote.data_validade).toLocaleDateString('pt-BR')}` : '';
-                option.textContent = `${lote.numero_lote} (Qtde: ${lote.quantidade})${validade}`;
+                
+                // Verificar se o lote está próximo do vencimento
+                let labelText = `${lote.numero_lote} (Qtde: ${lote.quantidade})`;
+                if (lote.data_validade) {
+                    const dataValidade = new Date(lote.data_validade);
+                    const diasParaVencer = Math.ceil((dataValidade - hoje) / (1000 * 60 * 60 * 24));
+                    
+                    const validadeStr = ` - Vence: ${dataValidade.toLocaleDateString('pt-BR')}`;
+                    
+                    // Destacar lotes próximos do vencimento
+                    if (dataValidade < hoje) {
+                        // Lote vencido
+                        option.textContent = `${labelText}${validadeStr} [VENCIDO]`;
+                        option.style.color = '#dc3545'; // Vermelho
+                        option.style.fontWeight = 'bold';
+                    } else if (dataValidade <= proximoVencimento) {
+                        // Lote próximo do vencimento
+                        option.textContent = `${labelText}${validadeStr} [EXPIRA EM ${diasParaVencer}D]`;
+                        option.style.color = '#ffc107'; // Amarelo
+                    } else {
+                        option.textContent = `${labelText}${validadeStr}`;
+                    }
+                } else {
+                    option.textContent = `${labelText} (Sem data de validade)`;
+                }
+                
                 loteSelect.appendChild(option);
             });
         } else {
             console.error('Erro ao carregar lotes:', response.status);
+            // Caso a rota específica por local ainda não exista, tentar rota genérica
+            const fallbackResponse = await fetch(`/api/lotes/produto/${produtoId}`);
+            if (fallbackResponse.ok) {
+                const fallbackData = await fallbackResponse.json();
+                const lotes = fallbackData.lotes || [];
+                
+                const loteSelect = document.getElementById('loteId');
+                loteSelect.innerHTML = '<option value="">Não especificar lote (FIFO)</option>';
+                
+                lotes.forEach(lote => {
+                    const option = document.createElement('option');
+                    option.value = lote.id;
+                    
+                    let labelText = `${lote.numero_lote} (Qtde: ${lote.quantidade})`;
+                    if (lote.data_validade) {
+                        const validadeStr = ` - Vence: ${new Date(lote.data_validade).toLocaleDateString('pt-BR')}`;
+                        option.textContent = `${labelText}${validadeStr}`;
+                    } else {
+                        option.textContent = `${labelText} (Sem data de validade)`;
+                    }
+                    
+                    loteSelect.appendChild(option);
+                });
+            }
         }
     } catch (error) {
         console.error('Erro ao carregar lotes:', error);
+        
+        // Em caso de erro, tentar carregar todos os lotes do produto como fallback
+        try {
+            const fallbackResponse = await fetch(`/api/lotes/produto/${produtoId}`);
+            if (fallbackResponse.ok) {
+                const fallbackData = await fallbackResponse.json();
+                const lotes = fallbackData.lotes || [];
+                
+                const loteSelect = document.getElementById('loteId');
+                loteSelect.innerHTML = '<option value="">Não especificar lote (FIFO)</option>';
+                
+                lotes.forEach(lote => {
+                    const option = document.createElement('option');
+                    option.value = lote.id;
+                    
+                    let labelText = `${lote.numero_lote} (Qtde: ${lote.quantidade})`;
+                    if (lote.data_validade) {
+                        const validadeStr = ` - Vence: ${new Date(lote.data_validade).toLocaleDateString('pt-BR')}`;
+                        option.textContent = `${labelText}${validadeStr}`;
+                    } else {
+                        option.textContent = `${labelText} (Sem data de validade)`;
+                    }
+                    
+                    loteSelect.appendChild(option);
+                });
+            }
+        } catch (fallbackError) {
+            console.error('Erro ao carregar lotes como fallback:', fallbackError);
+        }
     }
 }
 

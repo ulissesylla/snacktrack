@@ -141,6 +141,35 @@ async function buscarLotesPorProduto(req, res) {
 }
 
 /**
+ * Buscar lotes por produto e localização
+ */
+async function buscarLotesPorProdutoLocalizacao(req, res) {
+  try {
+    const produtoId = Number(req.params.produtoId);
+    const localizacaoId = Number(req.params.localizacaoId);
+    
+    if (isNaN(produtoId) || produtoId <= 0) {
+      return res.status(400).json({ error: "ID do produto inválido" });
+    }
+    
+    if (isNaN(localizacaoId) || localizacaoId <= 0) {
+      return res.status(400).json({ error: "ID da localização inválido" });
+    }
+
+    const params = {
+      withExpired: req.query.withExpired !== "false"  // Default to true
+    };
+
+    const lotes = await loteService.buscarPorProdutoLocalizacao(produtoId, localizacaoId, params);
+    return res.status(200).json({ lotes });
+  } catch (e) {
+    if (e && e.status) return res.status(e.status).json({ error: e.message });
+    console.error(e);
+    return res.status(500).json({ error: "Erro interno" });
+  }
+}
+
+/**
  * Obter lotes próximos do vencimento
  */
 async function getLotesProximosValidade(req, res) {
@@ -180,6 +209,7 @@ module.exports = {
   atualizarLote,
   removerLote,
   buscarLotesPorProduto,
+  buscarLotesPorProdutoLocalizacao,
   getLotesProximosValidade,
   getLotesVencidos
 };

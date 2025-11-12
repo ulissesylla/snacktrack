@@ -195,6 +195,25 @@ async function buscarPorProduto(produtoId, params = {}) {
 }
 
 /**
+ * Buscar lotes por produto e localização
+ * @param {number} produtoId - ID do produto
+ * @param {number} localizacaoId - ID da localização
+ * @param {Object} params - Parâmetros de filtragem
+ * @returns {Array} Lista de lotes do produto na localização específica
+ */
+async function buscarPorProdutoLocalizacao(produtoId, localizacaoId, params = {}) {
+  // Verificar se produto existe
+  const produto = await produtoData.findById(produtoId);
+  if (!produto) throw { status: 404, message: "Produto não encontrado" };
+  
+  // Verificar se localização existe
+  const local = await require("../data/localData").findById(localizacaoId);
+  if (!local) throw { status: 404, message: "Localização não encontrada" };
+  
+  return loteData.findByProdutoLocalizacao(produtoId, localizacaoId, params);
+}
+
+/**
  * Obter lotes próximos do vencimento
  * @param {number} diasValidade - Dias para considerar como próximo do vencimento
  * @returns {Array} Lista de lotes próximos do vencimento
@@ -218,6 +237,7 @@ module.exports = {
   atualizar,
   remover,
   buscarPorProduto,
+  buscarPorProdutoLocalizacao,
   getLotesProximosValidade,
   getLotesVencidos
 };
