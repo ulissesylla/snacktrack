@@ -32,7 +32,16 @@
                         <div class="error-message" id="produtoError"></div>
                     </div>
 
+                    <!-- Novos campos relacionados ao lote -->
                     <div class="form-group">
+                        <label for="loteOption">Opção de Lote</label>
+                        <select class="form-control" id="loteOption" name="lote_option">
+                            <option value="novo">Criar novo lote</option>
+                            <option value="existente">Adicionar a lote existente</option>
+                        </select>
+                    </div>
+
+                    <div id="localSelectionGroup" class="form-group">
                         <label for="localId">Local *</label>
                         <select class="form-control" id="localId" name="local_id" required>
                             <option value="">Selecione um local</option>
@@ -46,15 +55,6 @@
                         <input type="number" class="form-control" id="quantidade" name="quantidade" 
                                placeholder="Ex: 10.5" min="0.01" step="0.01" required>
                         <div class="error-message" id="quantidadeError"></div>
-                    </div>
-
-                    <!-- Novos campos relacionados ao lote -->
-                    <div class="form-group">
-                        <label for="loteOption">Opção de Lote</label>
-                        <select class="form-control" id="loteOption" name="lote_option">
-                            <option value="novo">Criar novo lote</option>
-                            <option value="existente">Adicionar a lote existente</option>
-                        </select>
                     </div>
 
                     <div id="novoLoteFields" class="form-group" style="display: none;">

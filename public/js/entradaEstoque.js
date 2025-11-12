@@ -39,9 +39,13 @@ document.addEventListener('DOMContentLoaded', async function() {
             document.getElementById('novoLoteFields').style.display = 'block';
             document.getElementById('datasLoteFields').style.display = 'block';
             document.getElementById('dataFabricacaoField').style.display = 'block';
+            // Mostrar campo de localização para novos lotes
+            document.getElementById('localSelectionGroup').style.display = 'block';
         } else if (option === 'existente') {
             document.getElementById('loteExistentesFields').style.display = 'block';
             // Para lotes existentes, não mostramos os campos de data pois eles já estão definidos no lote
+            // Esconder o campo de localização pois o lote já tem um local definido
+            document.getElementById('localSelectionGroup').style.display = 'none';
         }
     }
     
@@ -219,6 +223,7 @@ async function handleSubmit(event) {
     // Obter opção selecionada para lote
     const loteOption = document.getElementById('loteOption').value;
     let loteId = null;
+    let localId = null;
     let numeroLote = null;
     let dataValidade = null;
     let dataFabricacao = null;
@@ -228,6 +233,8 @@ async function handleSubmit(event) {
         numeroLote = document.getElementById('numeroLote').value.trim() || null;
         dataValidade = document.getElementById('dataValidade').value || null;
         dataFabricacao = document.getElementById('dataFabricacao').value || null;
+        // Usar o local selecionado no formulário para novos lotes
+        localId = parseInt(document.getElementById('localId').value) || null;
     } else if (loteOption === 'existente') {
         // Pegar ID do lote existente selecionado
         loteId = document.getElementById('loteExistentes').value || null;
@@ -235,14 +242,33 @@ async function handleSubmit(event) {
             showBanner('Por favor, selecione um lote existente', 'error');
             return;
         }
-        // Para lotes existentes, não alteramos as datas originais, então não incluímos data_validade e data_fabricacao
-        // O backend usará as datas originais do lote existente
+        
+        // Para lotes existentes, precisamos obter o local atual do lote
+        // Isso será feito no backend ou precisamos fazer uma requisição aqui
+        try {
+            const loteResponse = await fetch(`/api/lotes/${loteId}`);
+            if (!loteResponse.ok) {
+                showBanner('Erro ao obter informações do lote', 'error');
+                return;
+            }
+            const loteData = await loteResponse.json();
+            localId = loteData.lote.localizacao_id; // O local atual do lote existente
+            
+            if (!localId) {
+                showBanner('O lote selecionado não tem uma localização definida', 'error');
+                return;
+            }
+        } catch (error) {
+            console.error('Erro ao obter localização do lote:', error);
+            showBanner('Erro ao obter localização do lote', 'error');
+            return;
+        }
     }
     
     // Coletar dados do formulário
     const formData = {
         produto_id: parseInt(document.getElementById('produtoId').value) || null,
-        local_id: parseInt(document.getElementById('localId').value) || null,
+        local_id: localId,  // Local depende da opção selecionada
         quantidade: parseFloat(document.getElementById('quantidade').value) || null,
         lote_id: loteId || null,  // Passar o ID do lote existente se selecionado
         // Informações para criar novo lote ou adicionar a existente
@@ -424,23 +450,55 @@ function limparErros() {
 function limparFormulario() {
     document.getElementById('formEntrada').reset();
     
+    // Selecionar a opção padrão
+    const loteOptionSelect = document.getElementById('loteOption');
+    loteOptionSelect.value = 'novo';
+    
     // Esconder campos de lote e redefinir para opção padrão
     document.getElementById('novoLoteFields').style.display = 'none';
     document.getElementById('loteExistentesFields').style.display = 'none';
+    document.getElementById('datasLoteFields').style.display = 'none';
+    document.getElementById('dataFabricacaoField').style.display = 'none';
+    
+    // Mostrar campo de localização novamente (padrão para nova criação de lote)
+    document.getElementById('localSelectionGroup').style.display = 'block';
     
     // Limpar também os campos específicos de lote
     document.getElementById('numeroLote')?.removeAttribute('value');
     document.getElementById('dataValidade')?.removeAttribute('value');
     document.getElementById('dataFabricacao')?.removeAttribute('value');
     
-    // Selecionar a opção padrão
-    document.getElementById('loteOption').value = 'novo';
-    
     // Limpar lista de lotes existentes
     const lotesExistentesSelect = document.getElementById('loteExistentes');
     if (lotesExistentesSelect) {
         lotesExistentesSelect.innerHTML = '<option value="">Selecione um lote existente</option>';
     }
+    
+    // Chamar a função para atualizar campos de lotes após resetar o formulário
+    // Isso garante que os campos fiquem visíveis/ocultos de acordo com a opção selecionada (novo)
+    setTimeout(() => {
+        // Aplicar a mesma lógica usada no event listener de 'change'
+        const option = loteOptionSelect.value;
+        
+        // Esconder ambos os conjuntos de campos
+        document.getElementById('novoLoteFields').style.display = 'none';
+        document.getElementById('loteExistentesFields').style.display = 'none';
+        document.getElementById('datasLoteFields').style.display = 'none';
+        document.getElementById('dataFabricacaoField').style.display = 'none';
+        document.getElementById('localSelectionGroup').style.display = 'none'; // Reset display state
+        
+        // Mostrar o conjunto apropriado com base na seleção
+        if (option === 'novo') {
+            document.getElementById('novoLoteFields').style.display = 'block';
+            document.getElementById('datasLoteFields').style.display = 'block';
+            document.getElementById('dataFabricacaoField').style.display = 'block';
+            document.getElementById('localSelectionGroup').style.display = 'block';
+        } else if (option === 'existente') {
+            document.getElementById('loteExistentesFields').style.display = 'block';
+            // Para lotes existentes, não mostramos os campos de data pois eles já estão definidos no lote
+            document.getElementById('localSelectionGroup').style.display = 'none';
+        }
+    }, 0);
 }
 
 // Função para mostrar/ocultar loading
