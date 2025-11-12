@@ -27,6 +27,42 @@ document.addEventListener('DOMContentLoaded', async function() {
     `;
     quantidadeDiv.parentNode.insertBefore(lotesContainer, quantidadeDiv.nextSibling);
     
+    // Adicionar campo de seleção de motivo de saída
+    const loteDiv = document.querySelector('#loteId').closest('.form-group');
+    const motivoContainer = document.createElement('div');
+    motivoContainer.className = 'form-group';
+    motivoContainer.innerHTML = `
+      <label for="motivoSaida">Motivo da Saída *</label>
+      <select class="form-control" id="motivoSaida" name="motivo_saida" required>
+        <option value="">Selecione o motivo da saída</option>
+        <option value="Venda">Venda</option>
+        <option value="Vencimento">Vencimento</option>
+        <option value="Danificado">Danificado</option>
+        <option value="Descarte">Descarte</option>
+        <option value="Devolução a Fornecedor">Devolução a Fornecedor</option>
+        <option value="Perda">Perda</option>
+        <option value="Promoção/Brinde">Promoção/Brinde</option>
+        <option value="outro">Outro (especifique)</option>
+      </select>
+      <div class="error-message" id="motivoSaidaError"></div>
+    `;
+    loteDiv.parentNode.insertBefore(motivoContainer, loteDiv.nextSibling);
+    
+    // Adicionar campo de texto para "outro motivo" (oculto por padrão)
+    const motivoSelect = document.getElementById('motivoSaida');
+    const outroMotivoContainer = document.createElement('div');
+    outroMotivoContainer.className = 'form-group';
+    outroMotivoContainer.id = 'campoOutroMotivo';
+    outroMotivoContainer.style.display = 'none'; // Oculto por padrão
+    outroMotivoContainer.innerHTML = `
+      <label for="outroMotivo">Especifique o Motivo *</label>
+      <textarea class="form-control" id="outroMotivo" name="outro_motivo" 
+                rows="2" maxlength="255" placeholder="Descreva o motivo da saída..."></textarea>
+      <small id="caracteresRestantes" class="form-hint">255 caracteres restantes</small>
+      <div class="error-message" id="outroMotivoError"></div>
+    `;
+    loteDiv.parentNode.insertBefore(outroMotivoContainer, loteDiv.nextSibling);
+    
     // Carregar dados iniciais
     carregarProdutos();
     carregarLocais();
@@ -71,6 +107,47 @@ document.addEventListener('DOMContentLoaded', async function() {
             loteSelect.innerHTML = '<option value="">Não especificar lote (FIFO)</option>';
         }
     });
+    
+    // Configurar eventos para o campo de motivo de saída
+    const motivoSaidaSelect = document.getElementById('motivoSaida');
+    const campoOutroMotivo = document.getElementById('campoOutroMotivo');
+    
+    if (motivoSaidaSelect) {
+        motivoSaidaSelect.addEventListener('change', function() {
+            if (this.value === 'outro') {
+                campoOutroMotivo.style.display = 'block';
+            } else {
+                campoOutroMotivo.style.display = 'none';
+            }
+        });
+    }
+    
+    // Configurar contador de caracteres para o campo de "outro motivo"
+    const outroMotivoTextarea = document.getElementById('outroMotivo');
+    const caracteresRestantesSpan = document.getElementById('caracteresRestantes');
+    
+    if (outroMotivoTextarea && caracteresRestantesSpan) {
+        // Função para atualizar contador de caracteres
+        function atualizarContador() {
+            const maxLength = 255;
+            const currentLength = outroMotivoTextarea.value.length;
+            const remaining = maxLength - currentLength;
+            caracteresRestantesSpan.textContent = `${remaining} caracteres restantes`;
+            
+            if (remaining < 0) {
+                // Truncar se excedeu
+                outroMotivoTextarea.value = outroMotivoTextarea.value.substring(0, maxLength);
+                caracteresRestantesSpan.textContent = '0 caracteres restantes';
+            }
+        }
+        
+        // Event listener para atualizar contador quando o usuário digita
+        outroMotivoTextarea.addEventListener('input', atualizarContador);
+        
+        // Inicializar contador
+        atualizarContador();
+    }
+    
     quantidadeInput.addEventListener('input', validarQuantidadeEmTempoReal);
 });
 
@@ -379,12 +456,34 @@ async function handleSubmit(event) {
         return;
     }
     
+    // Obter o motivo da saída
+    const motivoSelect = document.getElementById('motivoSaida');
+    let observacao = '';
+    
+    if (motivoSelect && motivoSelect.value === 'outro') {
+        const outroMotivoInput = document.getElementById('outroMotivo');
+        if (outroMotivoInput) {
+            const outroTexto = outroMotivoInput.value.trim();
+            if (!outroTexto) {
+                showBanner('Por favor, especifique o motivo da saída no campo "Outro"', 'error');
+                return;
+            }
+            observacao = outroTexto;
+        } else {
+            showBanner('Campo de especificação de motivo não encontrado', 'error');
+            return;
+        }
+    } else if (motivoSelect) {
+        observacao = motivoSelect.value;
+    }
+    
     // Coletar dados do formulário
     const formData = {
         produto_id: parseInt(document.getElementById('produtoId').value) || null,
         local_id: parseInt(document.getElementById('localId').value) || null,
         quantidade: parseFloat(document.getElementById('quantidade').value) || null,
-        lote_id: document.getElementById('loteId').value || null
+        lote_id: document.getElementById('loteId').value || null,
+        observacao: observacao  // Adicionando o motivo como observação
     };
 
     // Validar formulário
@@ -460,6 +559,13 @@ function validarFormulario(dados) {
         erros.push({ campo: 'quantidade', mensagem: `Quantidade excede estoque disponível (${estoqueAtual})` });
     }
     
+    // Validar motivo da saída
+    if (!dados.observacao || dados.observacao.trim() === '') {
+        erros.push({ campo: 'motivoSaida', mensagem: 'Motivo da saída é obrigatório' });
+    } else if (dados.observacao.length > 255) {
+        erros.push({ campo: 'outroMotivo', mensagem: 'Motivo da saída excede 255 caracteres' });
+    }
+    
     return erros;
 }
 
@@ -470,8 +576,24 @@ function mostrarErros(erros) {
     
     // Adicionar classes de erro e mostrar mensagens
     erros.forEach(erro => {
-        const campo = document.getElementById(erro.campo);
-        const mensagem = document.getElementById(erro.campo.replace('Id', 'Error'));
+        let campo = null;
+        let mensagem = null;
+        
+        // Para campos especiais que não seguem o padrão campoId -> campoError
+        switch(erro.campo) {
+            case 'motivoSaida':
+                campo = document.getElementById('motivoSaida');
+                mensagem = document.getElementById('motivoSaidaError');
+                break;
+            case 'outroMotivo':
+                campo = document.getElementById('outroMotivo');
+                mensagem = document.getElementById('outroMotivoError');
+                break;
+            default:
+                campo = document.getElementById(erro.campo);
+                mensagem = document.getElementById(erro.campo.replace('Id', 'Error'));
+                break;
+        }
         
         if (campo) {
             campo.classList.add('error');
@@ -487,11 +609,27 @@ function mostrarErros(erros) {
 // Função para limpar erros de validação
 function limparErros() {
     // Remover classes de erro e mensagens
-    const campos = ['produtoId', 'localId', 'quantidade', 'loteId'];
+    const campos = ['produtoId', 'localId', 'quantidade', 'loteId', 'motivoSaida', 'outroMotivo'];
     
     campos.forEach(campo => {
-        const input = document.getElementById(campo);
-        const mensagem = document.getElementById(campo.replace('Id', 'Error'));
+        let input = null;
+        let mensagem = null;
+        
+        // Para campos especiais que não seguem o padrão campoId -> campoError
+        switch(campo) {
+            case 'motivoSaida':
+                input = document.getElementById('motivoSaida');
+                mensagem = document.getElementById('motivoSaidaError');
+                break;
+            case 'outroMotivo':
+                input = document.getElementById('outroMotivo');
+                mensagem = document.getElementById('outroMotivoError');
+                break;
+            default:
+                input = document.getElementById(campo);
+                mensagem = document.getElementById(campo.replace('Id', 'Error'));
+                break;
+        }
         
         if (input) {
             input.classList.remove('error');
@@ -517,6 +655,18 @@ function limparFormulario() {
     // Remover classes de validação visual
     const quantidadeInput = document.getElementById('quantidade');
     quantidadeInput.classList.remove('estoque-normal', 'estoque-baixo', 'estoque-acima');
+    
+    // Esconder o campo de "outro motivo" após limpar o formulário
+    const campoOutroMotivo = document.getElementById('campoOutroMotivo');
+    if (campoOutroMotivo) {
+        campoOutroMotivo.style.display = 'none';
+    }
+    
+    // Limpar também o campo de lotes
+    const loteSelect = document.getElementById('loteId');
+    if (loteSelect) {
+        loteSelect.innerHTML = '<option value="">Não especificar lote (FIFO)</option>';
+    }
 }
 
 // Função para mostrar/ocultar loading

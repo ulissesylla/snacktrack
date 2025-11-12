@@ -54,6 +54,30 @@
                         <div class="error-message" id="quantidadeError"></div>
                     </div>
 
+                    <div class="form-group">
+                        <label for="motivoSaida">Motivo da Saída *</label>
+                        <select class="form-control" id="motivoSaida" name="motivo_saida" required>
+                            <option value="">Selecione uma razão para a saída</option>
+                            <option value="Venda">Venda</option>
+                            <option value="Vencimento">Vencimento</option>
+                            <option value="Danificado">Danificado</option>
+                            <option value="Descarte">Descarte</option>
+                            <option value="Devolução a Fornecedor">Devolução a Fornecedor</option>
+                            <option value="Perda">Perda</option>
+                            <option value="Promoção/Brinde">Promoção/Brinde</option>
+                            <option value="outro">Outro (especifique)</option>
+                        </select>
+                        <div class="error-message" id="motivoSaidaError"></div>
+                    </div>
+
+                    <div class="form-group" id="campoOutroMotivo" style="display: none;">
+                        <label for="outroMotivo">Especifique o Motivo *</label>
+                        <textarea class="form-control" id="outroMotivo" name="outro_motivo" 
+                                  rows="2" maxlength="255" placeholder="Descreva o motivo da saída..."></textarea>
+                        <small id="caracteresRestantes" class="form-hint">255 caracteres restantes</small>
+                        <div class="error-message" id="outroMotivoError"></div>
+                    </div>
+
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary" id="btnSubmit">
                             <span class="btn-text">Registrar Saída</span>
