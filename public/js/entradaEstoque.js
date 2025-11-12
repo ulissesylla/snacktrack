@@ -23,8 +23,10 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Configurar o campo de opção de lote
     const loteOptionSelect = document.getElementById('loteOption');
-    loteOptionSelect.addEventListener('change', function() {
-        const option = this.value;
+    
+    // Função para atualizar campos de acordo com a opção selecionada
+    function atualizarCamposLote() {
+        const option = loteOptionSelect.value;
         
         // Esconder ambos os conjuntos de campos
         document.getElementById('novoLoteFields').style.display = 'none';
@@ -41,15 +43,13 @@ document.addEventListener('DOMContentLoaded', async function() {
             document.getElementById('loteExistentesFields').style.display = 'block';
             // Para lotes existentes, não mostramos os campos de data pois eles já estão definidos no lote
         }
-    });
-    
-    // Assegurar que os campos de data não sejam exibidos quando "existente" é selecionado por padrão
-    // (quando a página carrega, o valor padrão é "novo", mas se o usuário selecionou "existente" anteriormente)
-    const defaultValue = loteOptionSelect.value;
-    if (defaultValue === 'existente') {
-        document.getElementById('datasLoteFields').style.display = 'none';
-        document.getElementById('dataFabricacaoField').style.display = 'none';
     }
+    
+    // Adicionar listener para quando a opção é alterada
+    loteOptionSelect.addEventListener('change', atualizarCamposLote);
+    
+    // Chamar a função imediatamente para garantir que os campos estejam corretos ao carregar a página
+    atualizarCamposLote();
 
     // Configurar o campo de produto para carregar lotes existentes
     document.getElementById('produtoId').addEventListener('change', function() {
