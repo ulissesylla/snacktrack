@@ -10,16 +10,31 @@ async function registrarEntrada(req, res) {
   try {
     const usuarioId =
       req.session && req.session.user ? req.session.user.id : null;
-    const { produto_id, local_id, quantidade } = req.body;
+    const { produto_id, local_id, quantidade, lote_id, numero_lote, data_validade, data_fabricacao, lote_option } = req.body;
+    
+    // Preparar dados do lote
+    const loteData = lote_option ? {
+      lote_id,
+      numero_lote,
+      data_validade,
+      data_fabricacao,
+      lote_option
+    } : null;
+    
     const result = await EstoqueService.registrarEntrada(
       produto_id,
       local_id,
       quantidade,
-      usuarioId
+      usuarioId,
+      loteData
     );
     return res
       .status(201)
-      .json({ success: true, movimentacao: result.movimentacao });
+      .json({ 
+        success: true, 
+        movimentacao: result.movimentacao,
+        lote_id: result.loteId  // Retornar o ID do lote criado (se aplicável)
+      });
   } catch (err) {
     return handleError(err, res);
   }

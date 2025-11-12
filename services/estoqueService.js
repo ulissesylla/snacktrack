@@ -33,7 +33,7 @@ class ErroProdutoInvalido extends Error {
 
 class EstoqueService {
   // registrar entrada
-  static async registrarEntrada(produtoId, localId, quantidade, usuarioId) {
+  static async registrarEntrada(produtoId, localId, quantidade, usuarioId, loteData = null) {
     const produto = await produtoData.findById(produtoId);
     if (!produto || produto.status !== "Disponível") throw new ErroProdutoInvalido();
     const local = await localData.findById(localId);
@@ -41,18 +41,45 @@ class EstoqueService {
 
     const conn = await db.beginTransaction();
     try {
+      let loteId = null;
+      
+      // Se for uma entrada com lotes envolvidos
+      if (loteData) {
+        const { lote_id, numero_lote, data_validade, data_fabricacao, lote_option } = loteData;
+        const loteService = require('./loteService'); // Importar o serviço de lotes
+
+        if (lote_option === 'existente' && lote_id) {
+          // Usar lote existente
+          loteId = lote_id;
+          // Note: When using an existing lot, the quantity will be updated via the movimentacaoData.create function
+          // which handles 'Entrada' type movements by adding to the lot's quantidade
+        } else if (lote_option === 'novo' || !lote_id) {
+          // Criar novo lote
+          const novoLote = await loteService.criar({
+            produto_id: produtoId,
+            numero_lote: numero_lote || `LOT-${produtoId}-${Date.now()}`,
+            quantidade: quantidade, // A quantidade inicial do lote
+            data_validade: data_validade,
+            data_fabricacao: data_fabricacao,
+            localizacao_id: localId
+          });
+          loteId = novoLote.id;
+        }
+      }
+
       const m = new Movimentacao({
         tipo: "Entrada",
         produto_id: produtoId,
         local_destino_id: localId,
         quantidade,
         usuario_id: usuarioId,
+        lote_id: loteId // Associar o movimento ao lote
       });
       const errs = m.validate();
       if (errs.length) throw { status: 400, message: errs.join('; ') };
       const created = await movimentacaoData.create(m.toDB(), conn);
       await db.commit(conn);
-      return { success: true, movimentacao: created };
+      return { success: true, movimentacao: created, loteId };
     } catch (err) {
       await db.rollback(conn);
       throw err;

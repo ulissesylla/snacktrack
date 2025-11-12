@@ -13,20 +13,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         return;
     }
 
-    // Adicionar campo de seleção de lote após o campo de quantidade
-    const quantidadeDiv = document.querySelector('#quantidade').closest('.form-group');
-    const lotesContainer = document.createElement('div');
-    lotesContainer.className = 'form-group';
-    lotesContainer.innerHTML = `
-      <label for="loteId">Lote</label>
-      <select class="form-control" id="loteId" name="lote_id">
-        <option value="">Criar novo lote ou adicionar a existente</option>
-        <!-- Preenchido via JavaScript -->
-      </select>
-      <div class="error-message" id="loteError"></div>
-    `;
-    quantidadeDiv.parentNode.insertBefore(lotesContainer, quantidadeDiv.nextSibling);
-    
     // Carregar dados iniciais
     carregarProdutos();
     carregarLocais();
@@ -34,15 +20,45 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Configurar o formulário
     const form = document.getElementById('formEntrada');
     form.addEventListener('submit', handleSubmit);
+
+    // Configurar o campo de opção de lote
+    const loteOptionSelect = document.getElementById('loteOption');
+    loteOptionSelect.addEventListener('change', function() {
+        const option = this.value;
+        
+        // Esconder ambos os conjuntos de campos
+        document.getElementById('novoLoteFields').style.display = 'none';
+        document.getElementById('loteExistentesFields').style.display = 'none';
+        document.getElementById('datasLoteFields').style.display = 'none';
+        document.getElementById('dataFabricacaoField').style.display = 'none';
+        
+        // Mostrar o conjunto apropriado com base na seleção
+        if (option === 'novo') {
+            document.getElementById('novoLoteFields').style.display = 'block';
+            document.getElementById('datasLoteFields').style.display = 'block';
+            document.getElementById('dataFabricacaoField').style.display = 'block';
+        } else if (option === 'existente') {
+            document.getElementById('loteExistentesFields').style.display = 'block';
+            // Para lotes existentes, não mostramos os campos de data pois eles já estão definidos no lote
+        }
+    });
     
-    // Adicionar evento para quando o produto for alterado para carregar lotes
+    // Assegurar que os campos de data não sejam exibidos quando "existente" é selecionado por padrão
+    // (quando a página carrega, o valor padrão é "novo", mas se o usuário selecionou "existente" anteriormente)
+    const defaultValue = loteOptionSelect.value;
+    if (defaultValue === 'existente') {
+        document.getElementById('datasLoteFields').style.display = 'none';
+        document.getElementById('dataFabricacaoField').style.display = 'none';
+    }
+
+    // Configurar o campo de produto para carregar lotes existentes
     document.getElementById('produtoId').addEventListener('change', function() {
         const produtoId = this.value;
         if (produtoId) {
             carregarLotesPorProduto(produtoId);
         } else {
-            const loteSelect = document.getElementById('loteId');
-            loteSelect.innerHTML = '<option value="">Criar novo lote ou adicionar a existente</option>';
+            const lotesExistentesSelect = document.getElementById('loteExistentes');
+            lotesExistentesSelect.innerHTML = '<option value="">Selecione um lote existente</option>';
         }
     });
 });
@@ -174,8 +190,8 @@ async function carregarLotesPorProduto(produtoId) {
             const data = await response.json();
             const lotes = data.lotes || [];
             
-            const loteSelect = document.getElementById('loteId');
-            loteSelect.innerHTML = '<option value="">Criar novo lote ou adicionar a existente</option>';
+            const lotesExistentesSelect = document.getElementById('loteExistentes');
+            lotesExistentesSelect.innerHTML = '<option value="">Selecione um lote existente</option>';
             
             lotes.forEach(lote => {
                 const option = document.createElement('option');
@@ -183,7 +199,7 @@ async function carregarLotesPorProduto(produtoId) {
                 // Mostrar número do lote com data de validade
                 const validade = lote.data_validade ? ` - Vence: ${new Date(lote.data_validade).toLocaleDateString('pt-BR')}` : '';
                 option.textContent = `${lote.numero_lote} (Qtde: ${lote.quantidade})${validade}`;
-                loteSelect.appendChild(option);
+                lotesExistentesSelect.appendChild(option);
             });
         } else {
             console.error('Erro ao carregar lotes:', response.status);
@@ -200,12 +216,40 @@ async function handleSubmit(event) {
     // Prevenir submissões duplicadas
     if (submitLocked) return;
     
+    // Obter opção selecionada para lote
+    const loteOption = document.getElementById('loteOption').value;
+    let loteId = null;
+    let numeroLote = null;
+    let dataValidade = null;
+    let dataFabricacao = null;
+    
+    if (loteOption === 'novo') {
+        // Preparar dados para novo lote
+        numeroLote = document.getElementById('numeroLote').value.trim() || null;
+        dataValidade = document.getElementById('dataValidade').value || null;
+        dataFabricacao = document.getElementById('dataFabricacao').value || null;
+    } else if (loteOption === 'existente') {
+        // Pegar ID do lote existente selecionado
+        loteId = document.getElementById('loteExistentes').value || null;
+        if (!loteId) {
+            showBanner('Por favor, selecione um lote existente', 'error');
+            return;
+        }
+        // Para lotes existentes, não alteramos as datas originais, então não incluímos data_validade e data_fabricacao
+        // O backend usará as datas originais do lote existente
+    }
+    
     // Coletar dados do formulário
     const formData = {
         produto_id: parseInt(document.getElementById('produtoId').value) || null,
         local_id: parseInt(document.getElementById('localId').value) || null,
         quantidade: parseFloat(document.getElementById('quantidade').value) || null,
-        lote_id: document.getElementById('loteId').value || null
+        lote_id: loteId || null,  // Passar o ID do lote existente se selecionado
+        // Informações para criar novo lote ou adicionar a existente
+        numero_lote: numeroLote,
+        data_validade: dataValidade,
+        data_fabricacao: dataFabricacao,
+        lote_option: loteOption  // Indicar se é para novo lote ou existente
     };
 
     // Validar formulário
@@ -224,7 +268,7 @@ async function handleSubmit(event) {
         // Travar submissão para prevenir duplicação
         submitLocked = true;
         document.getElementById('btnSubmit').classList.add('loading');
-        
+        console.log(formData);
         // Enviar dados para a API
         const response = await fetch('/api/movimentacoes/entrada', {
             method: 'POST',
@@ -244,12 +288,6 @@ async function handleSubmit(event) {
                 console.log('Entrada registrada com sucesso!');
             }
             limparFormulario();
-            
-            // Limpar o campo de lotes também
-            const loteSelect = document.getElementById('loteId');
-            if (loteSelect) {
-                loteSelect.innerHTML = '<option value="">Criar novo lote ou adicionar a existente</option>';
-            }
         } else {
             const errorMessage = result.message || result.error || 'Erro ao registrar entrada';
             // Usar o sistema de notificações existente (igual produtos.js)
@@ -287,7 +325,18 @@ function validarFormulario(dados) {
         erros.push({ campo: 'quantidade', mensagem: 'Quantidade deve ser positiva' });
     }
     
-    // Não precisamos validar o lote_id, pois é opcional (pode criar novo lote)
+    // Validação específica para opção de lote
+    if (dados.lote_option === 'novo' && !dados.numero_lote) {
+        erros.push({ campo: 'numeroLote', mensagem: 'Número do lote é obrigatório para novo lote' });
+    }
+    
+    if (dados.data_validade && dados.data_fabricacao) {
+        const validade = new Date(dados.data_validade);
+        const fabricacao = new Date(dados.data_fabricacao);
+        if (validade < fabricacao) {
+            erros.push({ campo: 'dataValidade', mensagem: 'Data de validade deve ser posterior à data de fabricação' });
+        }
+    }
     
     return erros;
 }
@@ -300,7 +349,26 @@ function mostrarErros(erros) {
     // Adicionar classes de erro e mostrar mensagens
     erros.forEach(erro => {
         const campo = document.getElementById(erro.campo);
-        const mensagem = document.getElementById(erro.campo.replace('Id', 'Error'));
+        let mensagem;
+        
+        // Para campos especiais que não seguem o padrão campoId -> campoError
+        switch(erro.campo) {
+            case 'numeroLote':
+                mensagem = document.getElementById('numeroLoteError');
+                break;
+            case 'dataValidade':
+                mensagem = document.getElementById('dataValidadeError');
+                break;
+            case 'dataFabricacao':
+                mensagem = document.getElementById('dataFabricacaoError');
+                break;
+            case 'loteExistentes':
+                mensagem = document.getElementById('loteExistentesError');
+                break;
+            default:
+                mensagem = document.getElementById(erro.campo.replace('Id', 'Error'));
+                break;
+        }
         
         if (campo) {
             campo.classList.add('error');
@@ -316,11 +384,30 @@ function mostrarErros(erros) {
 // Função para limpar erros de validação
 function limparErros() {
     // Remover classes de erro e mensagens
-    const campos = ['produtoId', 'localId', 'quantidade', 'loteId'];
+    const campos = ['produtoId', 'localId', 'quantidade', 'numeroLote', 'dataValidade', 'dataFabricacao', 'loteExistentes'];
     
     campos.forEach(campo => {
         const input = document.getElementById(campo);
-        const mensagem = document.getElementById(campo.replace('Id', 'Error'));
+        let mensagem;
+        
+        // Para campos especiais que não seguem o padrão campoId -> campoError
+        switch(campo) {
+            case 'numeroLote':
+                mensagem = document.getElementById('numeroLoteError');
+                break;
+            case 'dataValidade':
+                mensagem = document.getElementById('dataValidadeError');
+                break;
+            case 'dataFabricacao':
+                mensagem = document.getElementById('dataFabricacaoError');
+                break;
+            case 'loteExistentes':
+                mensagem = document.getElementById('loteExistentesError');
+                break;
+            default:
+                mensagem = document.getElementById(campo.replace('Id', 'Error'));
+                break;
+        }
         
         if (input) {
             input.classList.remove('error');
@@ -336,6 +423,24 @@ function limparErros() {
 // Função para limpar o formulário
 function limparFormulario() {
     document.getElementById('formEntrada').reset();
+    
+    // Esconder campos de lote e redefinir para opção padrão
+    document.getElementById('novoLoteFields').style.display = 'none';
+    document.getElementById('loteExistentesFields').style.display = 'none';
+    
+    // Limpar também os campos específicos de lote
+    document.getElementById('numeroLote')?.removeAttribute('value');
+    document.getElementById('dataValidade')?.removeAttribute('value');
+    document.getElementById('dataFabricacao')?.removeAttribute('value');
+    
+    // Selecionar a opção padrão
+    document.getElementById('loteOption').value = 'novo';
+    
+    // Limpar lista de lotes existentes
+    const lotesExistentesSelect = document.getElementById('loteExistentes');
+    if (lotesExistentesSelect) {
+        lotesExistentesSelect.innerHTML = '<option value="">Selecione um lote existente</option>';
+    }
 }
 
 // Função para mostrar/ocultar loading

@@ -48,6 +48,43 @@
                         <div class="error-message" id="quantidadeError"></div>
                     </div>
 
+                    <!-- Novos campos relacionados ao lote -->
+                    <div class="form-group">
+                        <label for="loteOption">Opção de Lote</label>
+                        <select class="form-control" id="loteOption" name="lote_option">
+                            <option value="novo">Criar novo lote</option>
+                            <option value="existente">Adicionar a lote existente</option>
+                        </select>
+                    </div>
+
+                    <div id="novoLoteFields" class="form-group" style="display: none;">
+                        <label for="numeroLote">Número do Lote</label>
+                        <input type="text" class="form-control" id="numeroLote" name="numero_lote" 
+                               placeholder="Ex: FAR-001">
+                        <div class="error-message" id="numeroLoteError"></div>
+                    </div>
+
+                    <div id="loteExistentesFields" class="form-group" style="display: none;">
+                        <label for="loteExistentes">Lotes Existentes</label>
+                        <select class="form-control" id="loteExistentes" name="lote_id">
+                            <option value="">Selecione um lote existente</option>
+                            <!-- Preenchido via JavaScript -->
+                        </select>
+                        <div class="error-message" id="loteExistentesError"></div>
+                    </div>
+
+                    <div id="datasLoteFields" class="form-group">
+                        <label for="dataValidade">Data de Validade</label>
+                        <input type="date" class="form-control" id="dataValidade" name="data_validade">
+                        <div class="error-message" id="dataValidadeError"></div>
+                    </div>
+
+                    <div id="dataFabricacaoField" class="form-group">
+                        <label for="dataFabricacao">Data de Fabricação</label>
+                        <input type="date" class="form-control" id="dataFabricacao" name="data_fabricacao">
+                        <div class="error-message" id="dataFabricacaoError"></div>
+                    </div>
+
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary" id="btnSubmit">
                             <span class="btn-text">Registrar Entrada</span>
