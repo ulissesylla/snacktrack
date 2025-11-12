@@ -87,7 +87,7 @@ class EstoqueService {
   }
 
   // registrar saida
-  static async registrarSaida(produtoId, localId, quantidade, usuarioId) {
+  static async registrarSaida(produtoId, localId, quantidade, usuarioId, observacao = null) {
     const produto = await produtoData.findById(produtoId);
     if (!produto || produto.status !== "Disponível") throw new ErroProdutoInvalido();
     const local = await localData.findById(localId);
@@ -106,6 +106,7 @@ class EstoqueService {
         local_origem_id: localId,
         quantidade,
         usuario_id: usuarioId,
+        observacao: observacao  // Add the observation
       });
       const errs = m.validate();
       if (errs.length) throw { status: 400, message: errs.join('; ') };

@@ -44,12 +44,13 @@ async function registrarSaida(req, res) {
   try {
     const usuarioId =
       req.session && req.session.user ? req.session.user.id : null;
-    const { produto_id, local_id, quantidade } = req.body;
+    const { produto_id, local_id, quantidade, observacao } = req.body;
     const result = await EstoqueService.registrarSaida(
       produto_id,
       local_id,
       quantidade,
-      usuarioId
+      usuarioId,
+      observacao
     );
     return res
       .status(201)

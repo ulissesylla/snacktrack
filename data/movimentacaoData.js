@@ -16,7 +16,7 @@ async function create(movimentacao, connection = null) {
     }
 
     // Insert the movement record
-    const sql = `INSERT INTO movimentacoes (tipo, produto_id, lote_id, local_origem_id, local_destino_id, quantidade, usuario_id, data_movimentacao) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`;
+    const sql = `INSERT INTO movimentacoes (tipo, produto_id, lote_id, local_origem_id, local_destino_id, quantidade, usuario_id, observacao, data_movimentacao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())`;
     const params = [
       movimentacao.tipo,
       movimentacao.produto_id,
@@ -25,6 +25,7 @@ async function create(movimentacao, connection = null) {
       movimentacao.local_destino_id || null,
       movimentacao.quantidade,
       movimentacao.usuario_id || null,
+      movimentacao.observacao || null,
     ];
     const res = await db.query(sql, params, conn);
     const insertId = res.insertId || (res && res.affectedRows ? res.insertId : undefined);
